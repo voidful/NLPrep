@@ -1,4 +1,4 @@
-from nlpre.middleformat import MiddleFormat
+from nlprep.middleformat import MiddleFormat
 
 DATASET_FILE_MAP = {
     "train": "https://raw.githubusercontent.com/lancopku/Chinese-Literature-NER-RE-Dataset/master/ner/train.txt",

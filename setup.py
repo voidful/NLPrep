@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='nlpre',
+    name='nlprep',
     version='0.0.1',
     description='Download and pre-processing data for nlp tasks',
     url='https://github.com/voidful/nlpre',
@@ -24,7 +24,7 @@ setup(
         "opencc-python-reimplemented"
     ],
     entry_points={
-        'console_scripts': ['nlpre=nlpre.main:main']
+        'console_scripts': ['nlprep=nlprep.main:main']
     },
     zip_safe=False,
 )

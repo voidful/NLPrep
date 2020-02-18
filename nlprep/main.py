@@ -2,8 +2,8 @@ import argparse
 import importlib
 import os
 
-from nlpre.file_utils import cached_path
-from nlpre.utils.main import *
+from nlprep.file_utils import cached_path
+from nlprep.utils.main import *
 
 
 def getDatasets(mod, cache_dir=None):
@@ -31,7 +31,7 @@ def main():
     if not os.path.exists(arg.outdir):
         os.mkdir(arg.outdir)
 
-    mod = importlib.import_module('.' + arg.dataset, 'nlpre.datasets')
+    mod = importlib.import_module('.' + arg.dataset, 'nlprep.datasets')
     for k, dataset in getDatasets(mod, arg.cachedir).items():
         if arg.task == "tagRow":
             dataset.dump_tagRow(os.path.join(arg.outdir, k), utils)

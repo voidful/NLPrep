@@ -1,28 +1,28 @@
-# NLPre - download and pre-processing data for nlp tasks
+# NLPrep - download and pre-processing data for nlp tasks
 
 ## Example
 ```
-nlpre --dataset clner --task tagRow --outdir ./clner_row --util s2t
+nlprep --dataset clner --task tagRow --outdir ./clner_row --util s2t
 ```
 
 ## Installation
 
 ### Installing via pip
 ```bash
-pip install nlpre
+pip install nlprep
 ```
 
-## Running nlpre
+## Running nlprep
 
-Once you've installed nlpre, you can run with
+Once you've installed nlprep, you can run with
 
-`python -m nlpre.main` # local version  
+`python -m nlprep.main` # local version  
 or  
-`nlpre`  # pip installed version
+`nlprep`  # pip installed version
 
 and the following parameter:
 ```
-$ nlpre
+$ nlprep
 arguments:
   --dataset     which dataset to use    ['clner']      
   --task        type of training task   ['gen', 'classification', 'tagRow', 'tagCol']  
