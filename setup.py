@@ -4,7 +4,7 @@ setup(
     name='nlprep',
     version='0.0.1',
     description='Download and pre-processing data for nlp tasks',
-    url='https://github.com/voidful/nlpre',
+    url='https://github.com/voidful/nlprep',
     author='Voidful',
     author_email='voidful.stack@gmail.com',
     long_description=open("README.md", encoding="utf8").read(),
