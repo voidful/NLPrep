@@ -24,13 +24,13 @@ and the following parameter:
 ```
 $ nlprep
 arguments:
-  --dataset     which dataset to use    ['clner']      
+  --dataset     which dataset to use    ['clner','udicstm']      
   --task        type of training task   ['gen', 'classification', 'tagRow', 'tagCol']  
   --outdir      processed result output directory       
   
 optional arguments:
   -h, --help    show this help message and exit
-  --util    data preprocessing utility, support multiple utility    ['s2t','t2s']
+  --util    data preprocessing utility, support multiple utility    ['s2t','t2s','splittrain','splittest','splitvalid']
   --cachedir   dir for caching raw dataset
 ```
 
@@ -44,12 +44,28 @@ We provide a new Chinese literature dataset for Named Entity Recognition (NER) a
 
 From: https://github.com/lancopku/Chinese-Literature-NER-RE-Dataset
 
+### udicstm
+UDIC sentiment analysis Dataset  
+UDIC從PTT黑特版+好人版等等清理的訓練資料
+
+From: https://github.com/UDICatNCHU/Swinger
+
+
 ## Utility detail
 ### s2t
 using opencc-python-reimplemented to turn Simplified Chinese to Traditional Chinese
 
 ### t2s
 using opencc-python-reimplemented to turn Traditional Chinese to Simplified Chinese
+
+### splittrain
+split 80% data as training data
+
+### splittest
+split 20% data as testing data
+
+### splitvalid
+split 10% data as validation data
 
 ## Add a new dataset
 1. create a folder with dataset name as --dataset parameter  
@@ -82,4 +98,5 @@ middleformat:
 ```
 
 ## Add a new utility
-1. add function into utils/main.py, function name will be --util parameter
+- sentence level: add function into utils/sentlevel.py, function name will be --util parameter
+- paris level - add function into utils/parislevel.py, function name will be --util parameter
