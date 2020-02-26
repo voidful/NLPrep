@@ -24,7 +24,7 @@ and the following parameter:
 ```
 $ nlprep
 arguments:
-  --dataset     which dataset to use    ['clner','udicstm']      
+  --dataset     which dataset to use    ['clner','udicstm','pttgen']      
   --task        type of training task   ['gen', 'classification', 'tagRow', 'tagCol']  
   --outdir      processed result output directory       
   
@@ -49,6 +49,13 @@ UDIC sentiment analysis Dataset
 UDIC從PTT黑特版+好人版等等清理的訓練資料
 
 From: https://github.com/UDICatNCHU/Swinger
+
+### pttgen
+Gossiping-Chinese-Corpus  
+PTT 八卦版問答中文語料  
+蒐集了 PTT 八卦版於 2015 年至 2017 年 6 月的文章，每一行都是一個問答配對
+
+From: https://github.com/zake7749/Gossiping-Chinese-Corpus
 
 
 ## Utility detail

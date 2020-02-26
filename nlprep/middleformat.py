@@ -64,9 +64,7 @@ class MiddleFormat:
         with open(path, 'w', encoding='utf-8') as outfile:
             writer = csv.writer(outfile)
             for input, target in self.pairs:
-                input = " ".join(input)
-                target = " ".join(target)
                 for func in sentu_func:
                     input = func(input)
                     target = func(target)
-                writer.writerow(input, target)
+                writer.writerow([input, target])
