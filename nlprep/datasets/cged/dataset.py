@@ -12,7 +12,7 @@ DATASET_FILE_MAP = {
 def toMiddleFormat(paths):
     dataset = MiddleFormat()
     for path in paths:
-        soup = BeautifulSoup(open(path))
+        soup = BeautifulSoup(open(path, 'r', encoding='utf8'), features="lxml")
         temp = soup.root.find_all('doc')
 
         for i in temp:
