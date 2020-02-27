@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='nlprep',
-    version='0.0.3',
+    version='0.0.5',
     description='Download and pre-processing data for nlp tasks',
     url='https://github.com/voidful/nlprep',
     author='Voidful',
@@ -21,7 +21,9 @@ setup(
         # progress bars in model download and training scripts
         "tqdm >= 4.27",
         # Open Chinese convert (OpenCC) in pure Python.
-        "opencc-python-reimplemented"
+        "opencc-python-reimplemented",
+        # tool for handling text
+        "nlp2"
     ],
     entry_points={
         'console_scripts': ['nlprep=nlprep.main:main']

@@ -23,7 +23,7 @@ def getDatasets(mod, cache_dir=None):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str,
-                        choices=['clner', 'udicstm','pttgen'])
+                        choices=['clner', 'udicstm', 'pttgen', 'cged'])
     parser.add_argument("--task", type=str,
                         choices=['gen', 'classification', 'tagRow', 'tagCol'])
     parser.add_argument("--outdir", type=str)
