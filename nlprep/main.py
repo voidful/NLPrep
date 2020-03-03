@@ -21,20 +21,24 @@ def getDatasets(mod, cache_dir=None):
 
 
 def main():
+    dataset_dir = os.path.dirname(__file__) + '/datasets'
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str,
-                        choices=['clner', 'udicstm', 'pttgen', 'cged'])
+                        choices=list(filter(lambda x: os.path.isdir(os.path.join(dataset_dir, x)) and "_" not in x,
+                                            os.listdir(dataset_dir))),
+                        required=True)
     parser.add_argument("--task", type=str,
-                        choices=['gen', 'classification', 'tagRow', 'tagCol'])
-    parser.add_argument("--outdir", type=str)
+                        choices=['gen', 'classification', 'tagRow', 'tagCol'], required=True)
+    parser.add_argument("--outdir", type=str, required=True)
     parser.add_argument("--cachedir", type=str)
-    parser.add_argument("--util", type=str, nargs='+', default=[])
+    parser.add_argument("--util", type=str, default=[], nargs='+',
+                        choices=list(SentUtils.keys()) + list(PairsUtils.keys()))
 
     global arg
     arg = parser.parse_args()
-
     sent_utils = [SentUtils[i] for i in arg.util if i in SentUtils]
     pairs_utils = [PairsUtils[i] for i in arg.util if i in PairsUtils]
+
     if not os.path.exists(arg.outdir):
         os.mkdir(arg.outdir)
 
