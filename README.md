@@ -24,13 +24,13 @@ and the following parameter:
 ```
 $ nlprep
 arguments:
-  --dataset     which dataset to use    ['clner','udicstm','pttgen']      
+  --dataset     which dataset to use    ['clner','udicstm','pttgen','pttposgen','cged','drcdtag']
   --task        type of training task   ['gen', 'classification', 'tagRow', 'tagCol']  
   --outdir      processed result output directory       
   
 optional arguments:
   -h, --help    show this help message and exit
-  --util    data preprocessing utility, support multiple utility    ['s2t','t2s','splittrain','splittest','splitvalid']
+  --util    data preprocessing utility, support multiple utility    ['s2t','t2s','splittrain','splittest','splitvalid','tagsamerate']
   --cachedir   dir for caching raw dataset
 ```
 
@@ -56,6 +56,27 @@ PTT 八卦版問答中文語料
 蒐集了 PTT 八卦版於 2015 年至 2017 年 6 月的文章，每一行都是一個問答配對
 
 From: https://github.com/zake7749/Gossiping-Chinese-Corpus
+
+### pttposgen
+Gossiping-Chinese-Positive-Corpus
+PTT 八卦版-正面-問答中文語料
+來自 Gossiping-QA-Dataset-2_0.csv 資料集，從其中 774,114 筆問答配對中做情緒分析，抽取所有預測正面情緒的句子(正面機率>50%)，最終整理出 197926 筆資料。
+
+From: https://github.com/voidful/Gossiping-Chinese-Positive-Corpus
+
+### drcdtag
+Delta Reading Comprehension Dataset
+台達閱讀理解資料集
+資料集從2,108篇維基條目中整理出10,014篇段落，並從段落中標註出30,000多個問題
+
+From: https://github.com/DRCKnowledgeTeam/DRCD
+
+### cged
+Chinese Grammatical Error Diagnosis   
+中文語法錯誤診斷   
+The grammatical errors are broadly categorized into 4 error types: word ordering, redundant, missing, and incorrect selection of linguistic components.   
+
+From: http://nlp.ee.ncu.edu.tw/resource/cged.html
 
 
 ## Utility detail
