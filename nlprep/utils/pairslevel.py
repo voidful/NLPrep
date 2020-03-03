@@ -30,7 +30,7 @@ def splitvalid(path, pair, seed=422, train_ratio=0.7, test_ratio=0.2, valid_rati
     return [path, pair[test_num:valid_num]]
 
 
-## control all same tag data ratio in dataset
+# control all same tag data ratio in dataset
 def tagsamerate(path, pair, rate=0.27, seed=422):
     random.seed(seed)
     allsame_pair = []
@@ -47,6 +47,15 @@ def tagsamerate(path, pair, rate=0.27, seed=422):
     result = allsame_pair[:asnum] + notsame_pair
     random.shuffle(result)
     return [path, result]
+
+
+# remove all same tag in tagging dataset
+def tagrmallsame(path, pair):
+    result_pair = []
+    for p in pair:
+        if len(set(p[1])) > 1:
+            result_pair.append(p)
+    return [path, result_pair]
 
 
 PairsUtils = dict(inspect.getmembers(sys.modules[__name__],

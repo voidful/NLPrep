@@ -71,8 +71,8 @@ def split_text(text, maxlen, split_pat=SPLIT_PAT, greedy=False):
             templist = []
             for j in DG[i]:
                 cross = set(alls[i]) & (set(alls[j]) if j < len(alls) else set())
-                w_ij = sum([sent_lens[k] for k in cross]) ** 2  # 第i个节点与第j个节点交叉度
-                w_j = routes[j][0]  # 第j个子问题的值
+                w_ij = sum([sent_lens[k] for k in cross]) ** 2
+                w_j = routes[j][0]
                 w_i_ = w_ij + w_j
                 templist.append((w_i_, j))
             routes[i] = min(templist)
@@ -108,7 +108,7 @@ def toMiddleFormat(path):
             for qas in paragraph['qas']:
                 qas['question'] = filter(qas['question'])
                 question = list(qas['question'])
-                question = ['[SEP]'] + question
+                question = ['[Question]'] + question
                 for answers in qas['answers'][:1]:
                     paragraph['context'] = filter(paragraph['context'])
                     context = paragraph['context']
