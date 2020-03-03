@@ -30,5 +30,24 @@ def splitvalid(path, pair, seed=422, train_ratio=0.7, test_ratio=0.2, valid_rati
     return [path, pair[test_num:valid_num]]
 
 
+## control all same tag data ratio in dataset
+def tagsamerate(path, pair, rate=0.27, seed=422):
+    random.seed(seed)
+    allsame_pair = []
+    notsame_pair = []
+    for p in pair:
+        if len(set(p[1])) < 2:
+            allsame_pair.append(p)
+        else:
+            notsame_pair.append(p)
+
+    asnum = min(int(len(notsame_pair) * rate), len(allsame_pair))
+    print("allsame_pair:", len(allsame_pair), "notsame_pair:", len(notsame_pair), "ratio:", rate, "take:", asnum)
+    random.shuffle(allsame_pair)
+    result = allsame_pair[:asnum] + notsame_pair
+    random.shuffle(result)
+    return [path, result]
+
+
 PairsUtils = dict(inspect.getmembers(sys.modules[__name__],
                                      predicate=lambda f: inspect.isfunction(f) and f.__module__ == __name__))
