@@ -28,7 +28,7 @@ def main():
                                             os.listdir(dataset_dir))),
                         required=True)
     parser.add_argument("--task", type=str,
-                        choices=['gen', 'classification', 'tagRow', 'tagCol'], required=True)
+                        choices=['gen', 'classification', 'tagRow', 'tagCol', 'qa'], required=True)
     parser.add_argument("--outdir", type=str, required=True)
     parser.add_argument("--cachedir", type=str)
     parser.add_argument("--util", type=str, default=[], nargs='+',
@@ -52,6 +52,8 @@ def main():
             dataset.dump_gen(os.path.join(arg.outdir, k), pairs_utils, sent_utils)
         elif arg.task == "classification":
             dataset.dump_classification(os.path.join(arg.outdir, k), pairs_utils, sent_utils)
+        elif arg.task == "qa":
+            dataset.dump_qa(os.path.join(arg.outdir, k), pairs_utils, sent_utils)
 
 
 if __name__ == "__main__":

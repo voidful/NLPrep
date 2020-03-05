@@ -68,3 +68,14 @@ class MiddleFormat:
                     input = func(input)
                     target = func(target)
                 writer.writerow([input, target])
+
+    def dump_qa(self, path, pairsu_func=[], sentu_func=[]):
+        for func in pairsu_func:
+            path, self.pairs = func(path, self.pairs)
+        with open(path, 'w', encoding='utf-8') as outfile:
+            writer = csv.writer(outfile)
+            for input, target in self.pairs:
+                input = " ".join(input)
+                for func in sentu_func:
+                    input = func(input)
+                writer.writerow([input] + target)
