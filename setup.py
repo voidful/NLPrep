@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='nlprep',
-    version='0.0.10',
+    version='0.0.12',
     description='Download and pre-processing data for nlp tasks',
     url='https://github.com/voidful/nlprep',
     author='Voidful',

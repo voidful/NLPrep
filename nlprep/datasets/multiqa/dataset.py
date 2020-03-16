@@ -83,10 +83,7 @@ def toMiddleFormat(paths):
                                 end = ans_pos + 1
 
                         input = input_token
-                        if start >= 0 and end >= 0:
-                            countOver += 1
-                        else:
-                            dataset.add_data(input, [start, end])
+                        dataset.add_data(input, [start, end])
 
     print("over:", countOver, 'total:', total, 'rate:', countOver / total)
     return dataset
