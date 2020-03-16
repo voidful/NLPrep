@@ -1,6 +1,7 @@
 from nlprep.middleformat import MiddleFormat
 import gzip
 import json
+from tqdm import tqdm
 
 DATASET_FILE_MAP = {
     "train": ["https://multiqa.s3.amazonaws.com/squad2-0_format_data/SQuAD2-0_train.json.gz",
@@ -42,14 +43,20 @@ def toMiddleFormat(paths):
         with gzip.open(path, "rb") as f:
             data = json.loads(f.read())
             data = data["data"][0]["paragraphs"]
-            for i in data:
+            for i in tqdm(data):
                 for qas in i["qas"]:
                     q = qas['question']
                     for ans in qas['answers']:
+
                         ans_text = ans['text']
                         start = int(ans['answer_start'])
                         end = start + len(ans_text)
                         input = i["context"] + " [SEP] " + q
+
+                        total += 1
+                        if len(input.split(" ")) > 500:
+                            countOver += 1
+                            continue
 
                         tag = ["O"] * len(input)
                         tag[start:end] = ["A"] * len(ans_text)
@@ -76,11 +83,10 @@ def toMiddleFormat(paths):
                                 end = ans_pos + 1
 
                         input = input_token
-                        if not len(input) < 500 and start >= 0 and end >= 0:
+                        if start >= 0 and end >= 0:
                             countOver += 1
                         else:
                             dataset.add_data(input, [start, end])
-                        total += 1
 
     print("over:", countOver, 'total:', total, 'rate:', countOver / total)
     return dataset

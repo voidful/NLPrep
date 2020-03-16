@@ -1,5 +1,5 @@
 import csv
-
+from tqdm import tqdm
 
 # {
 #     "input": [
@@ -28,7 +28,7 @@ class MiddleFormat:
         with open(path, 'w', encoding='utf-8') as outfile:
             writer = csv.writer(outfile)
             writer.writerow(["input", "target"])
-            for input, target in self.pairs:
+            for input, target in tqdm(self.pairs):
                 for func in sentu_func:
                     input = func(input)
                     target = func(target)
@@ -39,7 +39,7 @@ class MiddleFormat:
             path, self.pairs = func(path, self.pairs)
         with open(path, 'w', encoding='utf-8') as outfile:
             writer = csv.writer(outfile)
-            for input, target in self.pairs:
+            for input, target in tqdm(self.pairs):
                 input = " ".join(input)
                 target = " ".join(target)
                 for func in sentu_func:
@@ -50,7 +50,7 @@ class MiddleFormat:
         for func in pairsu_func:
             path, self.pairs = func(path, self.pairs)
         with open(path, 'w', encoding='utf-8') as outfile:
-            for input, target in self.pairs:
+            for input, target in tqdm(self.pairs):
                 for i, t in zip(input, target):
                     for func in sentu_func:
                         i = func(i)
@@ -63,7 +63,7 @@ class MiddleFormat:
             path, self.pairs = func(path, self.pairs)
         with open(path, 'w', encoding='utf-8') as outfile:
             writer = csv.writer(outfile)
-            for input, target in self.pairs:
+            for input, target in tqdm(self.pairs):
                 for func in sentu_func:
                     input = func(input)
                     target = func(target)
@@ -74,7 +74,7 @@ class MiddleFormat:
             path, self.pairs = func(path, self.pairs)
         with open(path, 'w', encoding='utf-8') as outfile:
             writer = csv.writer(outfile)
-            for input, target in self.pairs:
+            for input, target in tqdm(self.pairs):
                 input = " ".join(input)
                 for func in sentu_func:
                     input = func(input)
