@@ -1,8 +1,6 @@
 import json
 import re
 
-import nlp2
-
 from nlprep.middleformat import MiddleFormat
 
 DATASET_FILE_MAP = {
@@ -105,9 +103,8 @@ def split_text(text, maxlen, split_pat=SPLIT_PAT, greedy=False):
 
 
 def filter(s):
-    s = nlp2.full2half(s)
-    return s.replace(" ", "_").replace('\t', "_").replace('\n', "_").replace('\r', "_").replace('\v', "_").replace('\f',
-                                                                                                                   "_")
+    return s.replace(" ", " ").replace('\t', " ").replace('\n', " ").replace('\r', " ").replace('\v', " ").replace('\f',
+                                                                                                                   " ")
 
 
 def toMiddleFormat(paths):
@@ -116,7 +113,9 @@ def toMiddleFormat(paths):
     if not isinstance(paths, list):
         paths = [paths]
 
-    max_len = 507
+    max_len = 450
+    total = 0
+    miss = 0
     for path in paths:
         with open(path, encoding="utf-8", errors='replace') as dataset_file:
             dataset_json = json.loads(dataset_file.read())
@@ -145,10 +144,14 @@ def toMiddleFormat(paths):
                             t.extend(["O"] * len(question))
                             start = 0
                             end = 0
-                            if "A" in t:
+                            if "A" in t and ans != "FAKE_ANSWER_1":
                                 start = t.index("A")
                                 end = start + ans_length
-                            if len(c) < max_len:
+                            if "".join(c[start:end]) == ans or "A" not in t or ans == "FAKE_ANSWER_1":
                                 dataset.add_data(c, [start, end])
+                            elif "A" in t and ans != "FAKE_ANSWER_1":
+                                miss += 1
+                            total += 1
 
+        print(miss, total, miss / total)
     return dataset
