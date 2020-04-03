@@ -58,5 +58,11 @@ def tagrmallsame(path, pair):
     return [path, result_pair]
 
 
+def reverse(path, pair):
+    for p in pair:
+        p.reverse()
+    return [path, pair]
+
+
 PairsUtils = dict(inspect.getmembers(sys.modules[__name__],
                                      predicate=lambda f: inspect.isfunction(f) and f.__module__ == __name__))

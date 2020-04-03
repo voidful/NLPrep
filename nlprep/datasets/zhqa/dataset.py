@@ -114,13 +114,13 @@ def toMiddleFormat(paths):
         paths = [paths]
 
     max_len = 450
-    total = 0
-    miss = 0
+
     for path in paths:
+        total = 0
+        miss = 0
         with open(path, encoding="utf-8", errors='replace') as dataset_file:
             dataset_json = json.loads(dataset_file.read())
             dataset_json = dataset_json['data']
-
         for item in dataset_json:
             for paragraph in item['paragraphs']:
                 for qas in paragraph['qas']:
@@ -152,6 +152,5 @@ def toMiddleFormat(paths):
                             elif "A" in t and ans != "FAKE_ANSWER_1":
                                 miss += 1
                             total += 1
-
         print(miss, total, miss / total)
     return dataset
