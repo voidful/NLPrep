@@ -6,6 +6,7 @@ try:
     from phraseg import *
 except ImportError:
     print("phraseg not install, plz install it from https://github.com/voidful/Phraseg")
+    raise
 
 DATASET_FILE_MAP = {
     "humor-dev": "https://raw.githubusercontent.com/voidful/CCL2019-Chinese-Humor-Computation/master/task2/task2_development.csv",
@@ -21,9 +22,8 @@ def toMiddleFormat(path):
         rows = csv.reader(csvfile)
         next(rows, None)
         for row in rows:
-            phrase_list = [k for k, v in phraseg.extract_sent(row[1], filter=True)]
+            input = [k for k, v in phraseg.extract_sent(row[1], filter=True)]
             target = nlp2.spilt_sentence_to_array(row[1], True)
-            input = phrase_list[:int(len(phrase_list) / 2)]
             if len(input) + len(target) <= 512:
                 input = " ".join(input)
                 target = " ".join(target)
