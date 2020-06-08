@@ -5,6 +5,8 @@ import os
 from nlprep.file_utils import cached_path
 from nlprep.utils.sentlevel import *
 from nlprep.utils.pairslevel import *
+from pandas_profiling import ProfileReport
+import pandas as pd
 
 
 def getDatasets(mod, cache_dir=None):
@@ -27,10 +29,9 @@ def main():
                         choices=list(filter(lambda x: os.path.isdir(os.path.join(dataset_dir, x)) and "_" not in x,
                                             os.listdir(dataset_dir))),
                         required=True)
-    parser.add_argument("--task", type=str,
-                        choices=['gen', 'classification', 'tagRow', 'tagCol', 'qa'], required=True)
     parser.add_argument("--outdir", type=str, required=True)
     parser.add_argument("--cachedir", type=str)
+    parser.add_argument("--report", action='store_true', help='dataset statistic report')
     parser.add_argument("--util", type=str, default=[], nargs='+',
                         choices=list(SentUtils.keys()) + list(PairsUtils.keys()))
 
@@ -44,16 +45,23 @@ def main():
 
     mod = importlib.import_module('.' + arg.dataset, 'nlprep.datasets')
     for k, dataset in getDatasets(mod, arg.cachedir).items():
-        if arg.task == "tagRow":
+        if dataset.Type == "tagRow":
             dataset.dump_tagRow(os.path.join(arg.outdir, k), pairs_utils, sent_utils)
-        elif arg.task == "tagCol":
+        elif dataset.Type == "tagCol":
             dataset.dump_tagCol(os.path.join(arg.outdir, k), pairs_utils, sent_utils)
-        elif arg.task == "gen":
+        elif dataset.Type == "gen":
             dataset.dump_gen(os.path.join(arg.outdir, k), pairs_utils, sent_utils)
-        elif arg.task == "classification":
+        elif dataset.Type == "classification":
             dataset.dump_classification(os.path.join(arg.outdir, k), pairs_utils, sent_utils)
-        elif arg.task == "qa":
+        elif dataset.Type == "qa":
             dataset.dump_qa(os.path.join(arg.outdir, k), pairs_utils, sent_utils)
+        df = pd.read_csv(os.path.join(arg.outdir, k), header=None)
+        profile = ProfileReport(df,
+                                html={'style': {'theme': 'flatly'}, 'minify_html': True},
+                                vars={'cat': {'unicode': True}},
+                                title=k + " report")
+
+        profile.to_file(os.path.join(arg.outdir, k + "_report.html"))
 
 
 if __name__ == "__main__":

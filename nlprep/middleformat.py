@@ -1,6 +1,7 @@
 import csv
 from tqdm import tqdm
 
+
 # {
 #     "input": [
 #         example1 input,
@@ -16,8 +17,9 @@ from tqdm import tqdm
 
 class MiddleFormat:
 
-    def __init__(self):
+    def __init__(self, type):
         self.pairs = []
+        self.Type = type
 
     def add_data(self, input, target):
         self.pairs.append([input, target])
@@ -34,6 +36,7 @@ class MiddleFormat:
                     target = func(target)
                 writer.writerow([input, target])
 
+
     def dump_tagRow(self, path, pairsu_func=[], sentu_func=[]):
         for func in pairsu_func:
             path, self.pairs = func(path, self.pairs)
@@ -45,6 +48,7 @@ class MiddleFormat:
                 for func in sentu_func:
                     input = func(input)
                 writer.writerow([input, target])
+
 
     def dump_tagCol(self, path, pairsu_func=[], sentu_func=[]):
         for func in pairsu_func:
@@ -58,6 +62,7 @@ class MiddleFormat:
                     outfile.write(temp)
                 outfile.write('\n')
 
+
     def dump_gen(self, path, pairsu_func=[], sentu_func=[]):
         for func in pairsu_func:
             path, self.pairs = func(path, self.pairs)
@@ -69,6 +74,7 @@ class MiddleFormat:
                     target = func(target)
                 writer.writerow([input, target])
 
+
     def dump_qa(self, path, pairsu_func=[], sentu_func=[]):
         for func in pairsu_func:
             path, self.pairs = func(path, self.pairs)
@@ -79,3 +85,4 @@ class MiddleFormat:
                 for func in sentu_func:
                     input = func(input)
                 writer.writerow([input] + target)
+

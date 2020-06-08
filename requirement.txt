@@ -3,3 +3,4 @@ filelock
 requests
 tqdm >= 4.27
 opencc-python-reimplemented
+pandas-profiling
