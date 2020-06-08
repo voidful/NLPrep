@@ -11,10 +11,10 @@ except ImportError:
 DATASET_FILE_MAP = {
     "poetry": "https://raw.githubusercontent.com/voidful/poetry/master/poetry.csv"
 }
-
+TYPE = "gen"
 
 def toMiddleFormat(path):
-    dataset = MiddleFormat()
+    dataset = MiddleFormat(TYPE)
     phraseg = Phraseg(path)
     with open(path, encoding='utf8') as csvfile:
         rows = csv.reader(csvfile)

@@ -4,13 +4,13 @@ from nlprep.middleformat import MiddleFormat
 import nlp2
 
 DATASET_FILE_MAP = {
-    "dataset": [
+    "pttposgen": [
         "https://raw.githubusercontent.com/voidful/Gossiping-Chinese-Positive-Corpus/master/Gossiping-QA-pos-Dataset-2_0.csv"]
 }
-
+TYPE = "gen"
 
 def toMiddleFormat(paths):
-    dataset = MiddleFormat()
+    dataset = MiddleFormat(TYPE)
     for path in paths:
         with open(path, encoding='utf8') as csvfile:
             rows = csv.reader(csvfile)

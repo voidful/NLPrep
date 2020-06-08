@@ -7,10 +7,10 @@ DATASET_FILE_MAP = {
     "dataset": [
         "https://raw.githubusercontent.com/zake7749/Gossiping-Chinese-Corpus/master/data/Gossiping-QA-Dataset-2_0.csv"]
 }
-
+TYPE = "gen"
 
 def toMiddleFormat(paths):
-    dataset = MiddleFormat()
+    dataset = MiddleFormat(TYPE)
     for path in paths:
         with open(path, encoding='utf8') as csvfile:
             rows = csv.reader(csvfile)

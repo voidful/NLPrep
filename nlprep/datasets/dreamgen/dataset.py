@@ -5,10 +5,11 @@ import nlp2
 DATASET_FILE_MAP = {
     "dream": "https://raw.githubusercontent.com/voidful/dream_gen/master/data.csv"
 }
+TYPE = "gen"
 
 
 def toMiddleFormat(path):
-    dataset = MiddleFormat()
+    dataset = MiddleFormat(TYPE)
     with open(path, encoding='utf8') as f:
         for _ in list(f.readlines()):
             data = json.loads(_)

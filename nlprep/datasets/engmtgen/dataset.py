@@ -6,10 +6,10 @@ DATASET_FILE_MAP = {
     "engcmn": "https://raw.githubusercontent.com/voidful/transformer-nmt/master/data/cmn.txt",
     "engyue": "https://raw.githubusercontent.com/voidful/transformer-nmt/master/data/yue.txt"
 }
-
+TYPE = "gen"
 
 def toMiddleFormat(path):
-    dataset = MiddleFormat()
+    dataset = MiddleFormat(TYPE)
     with open(path, encoding='utf8') as csvfile:
         rows = csv.reader(csvfile, delimiter='\t')
         for row in rows:

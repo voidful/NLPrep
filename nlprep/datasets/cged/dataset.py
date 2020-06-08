@@ -7,10 +7,11 @@ DATASET_FILE_MAP = {
                 "https://raw.githubusercontent.com/voidful/ChineseErrorDataset/master/CGED/CGED17_HSK_TrainingSet.xml",
                 "https://raw.githubusercontent.com/voidful/ChineseErrorDataset/master/CGED/CGED18_HSK_TrainingSet.xml"]
 }
+TYPE = "tagRow"
 
 
 def toMiddleFormat(paths):
-    dataset = MiddleFormat()
+    dataset = MiddleFormat(TYPE)
     for path in paths:
         soup = BeautifulSoup(open(path, 'r', encoding='utf8'), features="lxml")
         temp = soup.root.find_all('doc')

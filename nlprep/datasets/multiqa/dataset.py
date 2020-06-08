@@ -34,35 +34,11 @@ DATASET_FILE_MAP = {
               "https://multiqa.s3.amazonaws.com/squad2-0_format_data/ComplexQuestions_dev.json.gz",
               "https://multiqa.s3.amazonaws.com/squad2-0_format_data/ComQA_dev.json.gz"]
 }
-
-
-def _normalize_answer(s):
-    """Lower text and remove punctuation, articles and extra whitespace."""
-
-    def remove_articles(text):
-        return re.sub(r'\b(a|an|the)\b', ' ', text)
-
-    def white_space_fix(text):
-        return ' '.join(text.split())
-
-    def remove_punc(text):
-        exclude = set(string.punctuation)
-        return ''.join(ch for ch in text if ch not in exclude)
-
-    def lower(text):
-        return text.lower()
-
-    return white_space_fix(remove_articles(remove_punc(lower(s))))
-
-
-def sliding_windows(a, slide=128):
-    for i in range(int(len(a) / slide) + 1):
-        if len(a[i * slide:i * slide + slide]) > 0:
-            yield a[i * slide:i * slide + slide]
+TYPE = "qa"
 
 
 def toMiddleFormat(paths):
-    dataset = MiddleFormat()
+    dataset = MiddleFormat(TYPE)
     max_len = 380
     for path in paths:
         miss = 0
@@ -123,3 +99,28 @@ def toMiddleFormat(paths):
         total += 1 if total == 0 else 0
         print("miss:", miss, 'total:', total, 'rate:', miss / total)
     return dataset
+
+
+def _normalize_answer(s):
+    """Lower text and remove punctuation, articles and extra whitespace."""
+
+    def remove_articles(text):
+        return re.sub(r'\b(a|an|the)\b', ' ', text)
+
+    def white_space_fix(text):
+        return ' '.join(text.split())
+
+    def remove_punc(text):
+        exclude = set(string.punctuation)
+        return ''.join(ch for ch in text if ch not in exclude)
+
+    def lower(text):
+        return text.lower()
+
+    return white_space_fix(remove_articles(remove_punc(lower(s))))
+
+
+def sliding_windows(a, slide=128):
+    for i in range(int(len(a) / slide) + 1):
+        if len(a[i * slide:i * slide + slide]) > 0:
+            yield a[i * slide:i * slide + slide]

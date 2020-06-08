@@ -23,6 +23,57 @@ DATASET_FILE_MAP = {
                      "https://raw.githubusercontent.com/voidful/zh_mrc/master/cail/test_ground_truth.json",
                      "https://raw.githubusercontent.com/voidful/zh_mrc/master/cail/dev_ground_truth.json"]
 }
+TYPE = "qa"
+
+
+def toMiddleFormat(paths):
+    dataset = MiddleFormat(TYPE)
+
+    if not isinstance(paths, list):
+        paths = [paths]
+
+    max_len = 450
+
+    for path in paths:
+        total = 0
+        miss = 0
+        with open(path, encoding="utf-8", errors='replace') as dataset_file:
+            dataset_json = json.loads(dataset_file.read())
+            dataset_json = dataset_json['data']
+        for item in dataset_json:
+            for paragraph in item['paragraphs']:
+                for qas in paragraph['qas']:
+                    qas['question'] = filter(qas['question'])
+                    question = list(qas['question'])
+                    question = ['[Question]'] + question
+                    for answers in qas['answers'][:1]:
+                        paragraph['context'] = filter(paragraph['context'])
+                        context = paragraph['context']
+                        ans = filter(str(answers['text']))
+                        ans_length = len(ans)
+                        start = answers['answer_start']
+                        end = start + ans_length
+                        tag = ["O"] * len(context)
+                        tag[start:end] = ["A"] * ans_length
+                        context, tstart = split_text(context, max_len)
+                        for i, c in enumerate(context):
+                            c = list(c)
+                            t = tag[tstart[i]:tstart[i] + len(c)]
+                            c.extend(question)
+                            t.extend(["O"] * len(question))
+                            start = 0
+                            end = 0
+                            if "A" in t and ans != "FAKE_ANSWER_1":
+                                start = t.index("A")
+                                end = start + ans_length
+                            if "".join(c[start:end]) == ans or "A" not in t or ans == "FAKE_ANSWER_1":
+                                dataset.add_data(c, [start, end])
+                            elif "A" in t and ans != "FAKE_ANSWER_1":
+                                miss += 1
+                            total += 1
+        print(miss, total, miss / total)
+    return dataset
+
 
 #: A string of Chinese stops.
 STOPS = (
@@ -105,52 +156,3 @@ def split_text(text, maxlen, split_pat=SPLIT_PAT, greedy=False):
 def filter(s):
     return s.replace(" ", " ").replace('\t', " ").replace('\n', " ").replace('\r', " ").replace('\v', " ").replace('\f',
                                                                                                                    " ")
-
-
-def toMiddleFormat(paths):
-    dataset = MiddleFormat()
-
-    if not isinstance(paths, list):
-        paths = [paths]
-
-    max_len = 450
-
-    for path in paths:
-        total = 0
-        miss = 0
-        with open(path, encoding="utf-8", errors='replace') as dataset_file:
-            dataset_json = json.loads(dataset_file.read())
-            dataset_json = dataset_json['data']
-        for item in dataset_json:
-            for paragraph in item['paragraphs']:
-                for qas in paragraph['qas']:
-                    qas['question'] = filter(qas['question'])
-                    question = list(qas['question'])
-                    question = ['[Question]'] + question
-                    for answers in qas['answers'][:1]:
-                        paragraph['context'] = filter(paragraph['context'])
-                        context = paragraph['context']
-                        ans = filter(str(answers['text']))
-                        ans_length = len(ans)
-                        start = answers['answer_start']
-                        end = start + ans_length
-                        tag = ["O"] * len(context)
-                        tag[start:end] = ["A"] * ans_length
-                        context, tstart = split_text(context, max_len)
-                        for i, c in enumerate(context):
-                            c = list(c)
-                            t = tag[tstart[i]:tstart[i] + len(c)]
-                            c.extend(question)
-                            t.extend(["O"] * len(question))
-                            start = 0
-                            end = 0
-                            if "A" in t and ans != "FAKE_ANSWER_1":
-                                start = t.index("A")
-                                end = start + ans_length
-                            if "".join(c[start:end]) == ans or "A" not in t or ans == "FAKE_ANSWER_1":
-                                dataset.add_data(c, [start, end])
-                            elif "A" in t and ans != "FAKE_ANSWER_1":
-                                miss += 1
-                            total += 1
-        print(miss, total, miss / total)
-    return dataset

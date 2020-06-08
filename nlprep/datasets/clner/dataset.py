@@ -5,10 +5,11 @@ DATASET_FILE_MAP = {
     "test": "https://raw.githubusercontent.com/lancopku/Chinese-Literature-NER-RE-Dataset/master/ner/test.txt",
     "validation": "https://raw.githubusercontent.com/lancopku/Chinese-Literature-NER-RE-Dataset/master/ner/validation.txt",
 }
+TYPE = "tagRow"
 
 
 def toMiddleFormat(path):
-    dataset = MiddleFormat()
+    dataset = MiddleFormat(TYPE)
     with open(path, encoding='utf8') as f:
         sent_input = []
         sent_target = []

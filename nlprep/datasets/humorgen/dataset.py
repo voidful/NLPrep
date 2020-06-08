@@ -13,10 +13,11 @@ DATASET_FILE_MAP = {
     "humor-train": "https://raw.githubusercontent.com/voidful/CCL2019-Chinese-Humor-Computation/master/task2/task2_train.csv",
     "humor-test": "https://raw.githubusercontent.com/voidful/CCL2019-Chinese-Humor-Computation/master/task2/task2_test.csv",
 }
+TYPE = "gen"
 
 
 def toMiddleFormat(path):
-    dataset = MiddleFormat()
+    dataset = MiddleFormat(TYPE)
     phraseg = Phraseg(path)
     with open(path, encoding='utf8') as csvfile:
         rows = csv.reader(csvfile)

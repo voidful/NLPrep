@@ -10,6 +10,45 @@ DATASET_FILE_MAP = {
     "test": "https://raw.githubusercontent.com/DRCKnowledgeTeam/DRCD/master/DRCD_test.json",
     "dev": "https://raw.githubusercontent.com/DRCKnowledgeTeam/DRCD/master/DRCD_dev.json",
 }
+TYPE = "tagRow"
+def toMiddleFormat(path):
+    dataset = MiddleFormat(TYPE)
+
+    max_len = 507
+    with open(path, encoding="utf-8", errors='replace') as dataset_file:
+        dataset_json = json.loads(dataset_file.read())
+        dataset_json = dataset_json['data']
+
+    for item in dataset_json:
+        for paragraph in item['paragraphs']:
+            for qas in paragraph['qas']:
+                qas['question'] = filter(qas['question'])
+                question = list(qas['question'])
+                question = ['[Question]'] + question
+                for answers in qas['answers'][:1]:
+                    paragraph['context'] = filter(paragraph['context'])
+                    context = paragraph['context']
+                    ans = filter(str(answers['text']))
+                    ans_length = len(ans)
+                    start = answers['answer_start']
+                    end = start + ans_length
+                    tag = ["O"] * len(context)
+                    tag[start:end] = ["A"] * ans_length
+                    context, tstart = split_text(context, max_len)
+                    for i, c in enumerate(context):
+                        c = list(c)
+                        t = tag[tstart[i]:tstart[i] + len(c)]
+                        c.extend(question)
+                        t.extend(["O"] * len(question))
+                        if "A" in t:
+                            ind = t.index("A")
+                            if "".join(c[ind:ind + ans_length]) != ans or len(c) != len(t):
+                                pass
+                        if len(c) < max_len:
+                            dataset.add_data(c, t)
+
+    return dataset
+
 
 #: A string of Chinese stops.
 STOPS = (
@@ -18,10 +57,7 @@ STOPS = (
     '\uFF61'  # Halfwidth ideographic full stop
     '\u3002'  # Ideographic full stop
 )
-
 SPLIT_PAT = '([{}]”?)'.format(STOPS)
-
-
 def split_text(text, maxlen, split_pat=SPLIT_PAT, greedy=False):
     if len(text) <= maxlen:
         return [text], [0]
@@ -87,48 +123,7 @@ def split_text(text, maxlen, split_pat=SPLIT_PAT, greedy=False):
                 break
 
     return sub_texts, starts
-
-
 def filter(s):
     s = nlp2.full2half(s)
     return s.replace(" ", "_").replace('\t', "_").replace('\n', "_").replace('\r', "_").replace('\v', "_").replace('\f',
                                                                                                                    "_")
-
-
-def toMiddleFormat(path):
-    dataset = MiddleFormat()
-
-    max_len = 507
-    with open(path, encoding="utf-8", errors='replace') as dataset_file:
-        dataset_json = json.loads(dataset_file.read())
-        dataset_json = dataset_json['data']
-
-    for item in dataset_json:
-        for paragraph in item['paragraphs']:
-            for qas in paragraph['qas']:
-                qas['question'] = filter(qas['question'])
-                question = list(qas['question'])
-                question = ['[Question]'] + question
-                for answers in qas['answers'][:1]:
-                    paragraph['context'] = filter(paragraph['context'])
-                    context = paragraph['context']
-                    ans = filter(str(answers['text']))
-                    ans_length = len(ans)
-                    start = answers['answer_start']
-                    end = start + ans_length
-                    tag = ["O"] * len(context)
-                    tag[start:end] = ["A"] * ans_length
-                    context, tstart = split_text(context, max_len)
-                    for i, c in enumerate(context):
-                        c = list(c)
-                        t = tag[tstart[i]:tstart[i] + len(c)]
-                        c.extend(question)
-                        t.extend(["O"] * len(question))
-                        if "A" in t:
-                            ind = t.index("A")
-                            if "".join(c[ind:ind + ans_length]) != ans or len(c) != len(t):
-                                pass
-                        if len(c) < max_len:
-                            dataset.add_data(c, t)
-
-    return dataset
