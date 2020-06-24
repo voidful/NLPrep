@@ -15,8 +15,8 @@ def toMiddleFormat(paths):
         with open(path, encoding='utf8') as csvfile:
             rows = csv.reader(csvfile)
             for row in rows:
-                input = nlp2.spilt_sentence_to_array(row[0], True)
-                target = nlp2.spilt_sentence_to_array(row[1], True)
+                input = nlp2.split_sentence_to_array(row[0], True)
+                target = nlp2.split_sentence_to_array(row[1], True)
                 if len(input) + len(target) < 256:
                     input = " ".join(input)
                     target = " ".join(target)

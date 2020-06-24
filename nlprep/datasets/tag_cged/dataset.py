@@ -7,7 +7,7 @@ DATASET_FILE_MAP = {
                 "https://raw.githubusercontent.com/voidful/ChineseErrorDataset/master/CGED/CGED17_HSK_TrainingSet.xml",
                 "https://raw.githubusercontent.com/voidful/ChineseErrorDataset/master/CGED/CGED18_HSK_TrainingSet.xml"]
 }
-TYPE = "tagRow"
+TYPE = "tag"
 
 
 def toMiddleFormat(paths):

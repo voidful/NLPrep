@@ -246,3 +246,7 @@ how2
 ./cache
 cache
 /cache/
+
+./backup_dataset
+backup_dataset
+/backup_dataset/

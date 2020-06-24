@@ -4,7 +4,7 @@ DATASET_FILE_MAP = {
     "udicstm": ["https://raw.githubusercontent.com/UDICatNCHU/UdicOpenData/master/udicOpenData/Snownlp訓練資料/twpos.txt",
                 "https://raw.githubusercontent.com/UDICatNCHU/UdicOpenData/master/udicOpenData/Snownlp訓練資料/twneg.txt"]
 }
-TYPE = "classification"
+TYPE = "clas"
 
 def toMiddleFormat(paths):
     dataset = MiddleFormat(TYPE)

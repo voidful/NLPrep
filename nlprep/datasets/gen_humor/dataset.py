@@ -22,9 +22,9 @@ def toMiddleFormat(path):
     with open(path, encoding='utf8') as csvfile:
         rows = csv.reader(csvfile)
         next(rows, None)
-        for row in rows:
+        for row in tqdm(rows):
             input = [k for k, v in phraseg.extract_sent(row[1], filter=True)]
-            target = nlp2.spilt_sentence_to_array(row[1], True)
+            target = nlp2.split_sentence_to_array(row[1], True)
             if len(input) + len(target) <= 512:
                 input = " ".join(input)
                 target = " ".join(target)

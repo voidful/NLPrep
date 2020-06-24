@@ -24,65 +24,50 @@ class MiddleFormat:
     def add_data(self, input, target):
         self.pairs.append([input, target])
 
-    def dump_classification(self, path, pairsu_func=[], sentu_func=[]):
-        for func in pairsu_func:
-            path, self.pairs = func(path, self.pairs)
-        with open(path, 'w', encoding='utf-8') as outfile:
-            writer = csv.writer(outfile)
-            writer.writerow(["input", "target"])
-            for input, target in tqdm(self.pairs):
-                for func in sentu_func:
-                    input = func(input)
-                    target = func(target)
-                writer.writerow([input, target])
+    def __run_pair_utility(self, path, pairsu_func=[]):
+        processed_pair = []
+        if len(pairsu_func) > 0:
+            for func_pack in pairsu_func:
+                func, func_arg = func_pack
+                if len(processed_pair) > 0:
+                    new_pp = []
+                    for pp in processed_pair:
+                        path, pairs = pp
+                        new_pp.extend(func(path, pairs, **func_arg))
+                    processed_pair = new_pp
+                else:
+                    processed_pair = func(path, self.pairs, **func_arg)
+        else:
+            processed_pair = [[path, self.pairs]]
+        return processed_pair
 
+    def __run_sent_utility(self, sents, sentu_func=[]):
+        for ind, sent in enumerate(sents):
+            for func, func_arg in sentu_func:
+                sents[ind] = func(sent, **func_arg)
+        return sents
 
-    def dump_tagRow(self, path, pairsu_func=[], sentu_func=[]):
-        for func in pairsu_func:
-            path, self.pairs = func(path, self.pairs)
-        with open(path, 'w', encoding='utf-8') as outfile:
-            writer = csv.writer(outfile)
-            for input, target in tqdm(self.pairs):
-                input = " ".join(input)
-                target = " ".join(target)
-                for func in sentu_func:
-                    input = func(input)
-                writer.writerow([input, target])
+    def __convert_to_taskformat(self, task, input, target, sentu_func):
+        if task == "tag":
+            input = " ".join(input)
+            target = " ".join(target)
+            input = self.__run_sent_utility([input], sentu_func)
+        elif task == "gen":
+            input, target = self.__run_sent_utility([input, target], sentu_func)
+        elif task == "clas":
+            input, target = self.__run_sent_utility([input, target], sentu_func)
+        elif task == "qa":
+            input = " ".join(input)
+            input = self.__run_sent_utility([input], sentu_func)
+        return input, target
 
-
-    def dump_tagCol(self, path, pairsu_func=[], sentu_func=[]):
-        for func in pairsu_func:
-            path, self.pairs = func(path, self.pairs)
-        with open(path, 'w', encoding='utf-8') as outfile:
-            for input, target in tqdm(self.pairs):
-                for i, t in zip(input, target):
-                    for func in sentu_func:
-                        i = func(i)
-                    temp = i + ' ' + t + '\n'
-                    outfile.write(temp)
-                outfile.write('\n')
-
-
-    def dump_gen(self, path, pairsu_func=[], sentu_func=[]):
-        for func in pairsu_func:
-            path, self.pairs = func(path, self.pairs)
-        with open(path, 'w', encoding='utf-8') as outfile:
-            writer = csv.writer(outfile)
-            for input, target in tqdm(self.pairs):
-                for func in sentu_func:
-                    input = func(input)
-                    target = func(target)
-                writer.writerow([input, target])
-
-
-    def dump_qa(self, path, pairsu_func=[], sentu_func=[]):
-        for func in pairsu_func:
-            path, self.pairs = func(path, self.pairs)
-        with open(path, 'w', encoding='utf-8') as outfile:
-            writer = csv.writer(outfile)
-            for input, target in tqdm(self.pairs):
-                input = " ".join(input)
-                for func in sentu_func:
-                    input = func(input)
-                writer.writerow([input] + target)
-
+    def dump(self, path, task, pairsu_func=[], sentu_func=[]):
+        processed_pair = self.__run_pair_utility(path, pairsu_func)
+        for pp in processed_pair:
+            path, pairs = pp
+            with open(path, 'w', encoding='utf-8') as outfile:
+                writer = csv.writer(outfile)
+                for input, target in tqdm(pairs):
+                    input, target = self.__convert_to_taskformat(task, input, target, sentu_func)
+                    writer.writerow([input, target])
+        return [i[0] for i in processed_pair]

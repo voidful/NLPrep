@@ -5,7 +5,7 @@ DATASET_FILE_MAP = {
     "test": "https://raw.githubusercontent.com/lancopku/Chinese-Literature-NER-RE-Dataset/master/ner/test.txt",
     "validation": "https://raw.githubusercontent.com/lancopku/Chinese-Literature-NER-RE-Dataset/master/ner/validation.txt",
 }
-TYPE = "tagRow"
+TYPE = "tag"
 
 
 def toMiddleFormat(path):

@@ -13,8 +13,8 @@ def toMiddleFormat(path):
     with open(path, encoding='utf8') as f:
         for _ in list(f.readlines()):
             data = json.loads(_)
-            input = nlp2.spilt_sentence_to_array(data['dream'], True)
-            target = nlp2.spilt_sentence_to_array(data["decode"], True)
+            input = nlp2.split_sentence_to_array(data['dream'], True)
+            target = nlp2.split_sentence_to_array(data["decode"], True)
             if len(input) + len(target) < 512:
                 input = " ".join(input)
                 target = " ".join(target)
