@@ -46,8 +46,7 @@ class TestDataset(unittest.TestCase):
         self.assertTrue(0 == len(processed[0][1]))
         processed = pair_util.setMaxLen(dummyPath, dummyPair, maxlen=512, tokenizer="char",
                                         with_target=False, handle_over='slice')
-        self.assertTrue(len(processed[0][1][0][0].split(" ")) < 512)
-
+        self.assertTrue(len(processed[0][1][0][0]) < 512)
         processed = pair_util.setMaxLen(dummyPath, dummyPair, maxlen=514, tokenizer="char",
                                         with_target=True, handle_over='remove')
         self.assertTrue(0 == len(processed[0][1]))

@@ -56,7 +56,10 @@ def setMaxLen(path, pair, maxlen=512, tokenizer="word", with_target=[True, False
             limit_len = first_sep_index - exceed
             if limit_len > 0:
                 tok_input = tok_input[:limit_len] + tok_input[first_sep_index:]
-                small_than_max_pairs.append([(" ".join(tok_input)).replace(new_sep_token, separate_token), p[1]])
+                if tokenizer == 'char':
+                    small_than_max_pairs.append([("".join(tok_input)).replace(new_sep_token, separate_token), p[1]])
+                else:
+                    small_than_max_pairs.append([(" ".join(tok_input)).replace(new_sep_token, separate_token), p[1]])
     print("Num of data before handle max len ：", len(pair))
     print("Num of data after handle max len ：", len(small_than_max_pairs))
     return [[path, small_than_max_pairs]]
