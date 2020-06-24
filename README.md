@@ -6,7 +6,7 @@
 <p>
 <p align="center">
     <a href="https://pypi.org/project/nlprep/">
-        <img alt="PyPI" src="https://img.shields.i o/pypi/v/nlprep">
+        <img alt="PyPI" src="https://img.shields.io/pypi/v/nlprep">
     </a>
     <a href="https://github.com/voidful/NLPrep">
         <img alt="Download" src="https://img.shields.io/pypi/dm/nlprep">
