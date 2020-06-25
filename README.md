@@ -12,7 +12,10 @@
         <img alt="Download" src="https://img.shields.io/pypi/dm/nlprep">
     </a>
     <a href="https://github.com/voidful/NLPrep">
-        <img alt="Size" src="https://img.shields.io/github/repo-size/voidful/nlprep">
+        <img alt="Build" src="https://img.shields.io/github/workflow/status/voidful/NLPrep/Python package">
+    </a>
+    <a href="https://github.com/voidful/NLPrep">
+        <img alt="Last Commit" src="https://img.shields.io/github/last-commit/voidful/NLPrep">
     </a>
 </p>
 <br/>
