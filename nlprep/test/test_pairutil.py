@@ -2,7 +2,6 @@ import importlib
 import os
 import unittest
 import nlprep
-import tfkit
 
 
 class TestDataset(unittest.TestCase):

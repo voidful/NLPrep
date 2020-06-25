@@ -33,7 +33,8 @@ setup(
         # tokenizer support
         "transformers>=2.5.1",
         # input panel
-        "inquirer"
+        "inquirer",
+        "tfkit"
     ],
     entry_points={
         'console_scripts': ['nlprep=nlprep.main:main']
