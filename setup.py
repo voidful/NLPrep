@@ -29,7 +29,11 @@ setup(
         # dataset
         "nlp>=0.3.0",
         # phrase segmentation
-        "phraseg>=1.1.8"
+        "phraseg>=1.1.8",
+        # tokenizer support
+        "transformers>=2.5.1",
+        # input panel
+        "inquirer"
     ],
     entry_points={
         'console_scripts': ['nlprep=nlprep.main:main']
