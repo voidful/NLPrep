@@ -250,3 +250,7 @@ cache
 ./backup_dataset
 backup_dataset
 /backup_dataset/
+
+./pytest_cache
+pytest_cache
+/pytest_cache/
