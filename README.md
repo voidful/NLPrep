@@ -1,10 +1,12 @@
-# 🍳 NLPrep - natural language processing dataset tool for many task
 <p align="center">
     <br>
     <img src="https://raw.githubusercontent.com/voidful/NLPrep/master/doc/nlprep.png" width="400"/>
     <br>
 <p>
 <p align="center">
+    <a href="https://github.com/voidful/NLPrep/releases/">
+        <img alt="Release" src="https://img.shields.io/github/v/release/voidful/NLPrep">
+    </a>
     <a href="https://pypi.org/project/nlprep/">
         <img alt="PyPI" src="https://img.shields.io/pypi/v/nlprep">
     </a>
