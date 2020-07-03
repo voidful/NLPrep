@@ -19,11 +19,13 @@
 </p>
 
 ## Feature  
+
 - handle over 100 dataset  
 - generate statistic report about processed dataset  
 - support many pre-processing ways  
 - Provide a panel for entering your parameters at runtime  
 - easy to adapt your own dataset and pre-processing utility  
+
 
 ## Quick Start
 ### Installing via pip
@@ -32,7 +34,7 @@ pip install nlprep
 ```
 ### get one of the dataset
 ```bash
-nlprep --dataset clas_udicstm --outdir sentiment
+nlprep --dataset clas_udicstm --outdir sentiment --util
 ```
 
 **You can also try nlprep in Google Colab: [![Google Colab](https://colab.research.google.com/assets/colab-badge.svg "nlprep")](https://colab.research.google.com/drive/1EfVXa0O1gtTZ1xEAPDyvXMnyjcHxO7Jk?usp=sharing)**
@@ -58,4 +60,5 @@ Thanks for your interest.There are many ways to contribute to this project. Get 
 ## License ![PyPI - License](https://img.shields.io/github/license/voidful/nlprep)
 
 * [License](https://github.com/voidful/nlprep/blob/master/LICENSE)
+
 

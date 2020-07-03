@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='nlprep',
-    version='0.1.1',
+    version='0.1.2',
     description='Download and pre-processing data for nlp tasks',
     url='https://github.com/voidful/nlprep',
     author='Voidful',
@@ -22,16 +22,16 @@ setup(
         "tqdm >= 4.27",
         # Open Chinese convert (OpenCC) in pure Python.
         "opencc-python-reimplemented",
-        # tool for handling text
-        "nlp2>=1.6.2",
+        # tool for handling textinquirer
+        "nlp2 >= 1.6.6",
         # generate report
         "pandas-profiling >= 2.8.0",
         # dataset
-        "nlp>=0.3.0",
+        "nlp >= 0.3.0",
         # phrase segmentation
-        "phraseg>=1.1.8",
+        "phraseg >= 1.1.8",
         # tokenizer support
-        "transformers>=2.5.1",
+        "transformers >= 2.5.1",
         # input panel
         "inquirer",
         "BeautifulSoup4"

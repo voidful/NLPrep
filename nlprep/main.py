@@ -9,7 +9,6 @@ from nlprep.utils.sentlevel import *
 from nlprep.utils.pairslevel import *
 from pandas_profiling import ProfileReport
 import pandas as pd
-import inquirer
 
 
 def getDatasets(dataset, input_file_map=None, cache_dir=None):
@@ -55,28 +54,7 @@ def main():
     # handle utility argument input
     for util_list in [pairs_utils, sent_utils]:
         for ind, util in enumerate(util_list):
-            name = util.__name__
-            if inspect.getfullargspec(util).defaults:
-                arg_len = len(inspect.getfullargspec(util).args)
-                def_len = len(inspect.getfullargspec(util).defaults)
-                arg_w_def = zip(inspect.getfullargspec(util).args[arg_len - def_len:],
-                                inspect.getfullargspec(util).defaults)
-                inquirer_list = []
-                for k, v in arg_w_def:
-                    if isinstance(v, list):
-                        msg = name + " " + k
-                        inquirer_list.append(inquirer.List(k, message=msg, choices=v))
-                    else:
-                        if isinstance(v, float) and 0 < v < 1:  # probability
-                            msg = name + " " + k + " (between 0-1)"
-                        elif isinstance(v, float) or isinstance(v, int):  # number
-                            msg = name + " " + k + " (number)"
-                        else:
-                            msg = name + " " + k
-                        inquirer_list.append(inquirer.Text(k, message=msg, default=v))
-                util_arg = inquirer.prompt(inquirer_list)
-            else:
-                util_arg = {}
+            util_arg = nlp2.function_argument_panel(util, show_func_name=True)
             util_list[ind] = [util, util_arg]
 
     print("Start processing data...")
