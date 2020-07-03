@@ -25,6 +25,9 @@
 - Provide a panel for entering your parameters at runtime  
 - easy to adapt your own dataset and pre-processing utility  
 
+# Documentation
+Learn more from the [docs](https://voidful.github.io/nlprep/).  
+
 ## Quick Start
 ### Installing via pip
 ```bash
