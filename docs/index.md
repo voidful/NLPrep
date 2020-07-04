@@ -61,4 +61,7 @@ Thanks for your interest.There are many ways to contribute to this project. Get 
 
 * [License](https://github.com/voidful/nlprep/blob/master/LICENSE)
 
+## Icons reference
+Icons modify from <a href="https://www.flaticon.com/authors/darius-dan" title="Darius Dan">Darius Dan</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>    
+Icons modify from <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>    
 
