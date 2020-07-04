@@ -51,14 +51,14 @@ class MiddleFormat:
         if task == "tag":
             input = " ".join(input)
             target = " ".join(target)
-            input = self.__run_sent_utility([input], sentu_func)
+            input = self.__run_sent_utility([input], sentu_func)[0]
         elif task == "gen":
             input, target = self.__run_sent_utility([input, target], sentu_func)
         elif task == "clas":
             input, target = self.__run_sent_utility([input, target], sentu_func)
         elif task == "qa":
             input = " ".join(input)
-            input = self.__run_sent_utility([input], sentu_func)
+            input = self.__run_sent_utility([input], sentu_func)[0]
         return input, target
 
     def dump(self, path, task, pairsu_func=[], sentu_func=[]):
