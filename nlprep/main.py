@@ -9,6 +9,9 @@ from nlprep.utils.sentlevel import *
 from nlprep.utils.pairslevel import *
 from pandas_profiling import ProfileReport
 import pandas as pd
+import os
+
+os.environ["PYTHONIOENCODING"] = "utf-8"
 
 
 def getDatasets(dataset, input_file_map=None, cache_dir=None):
