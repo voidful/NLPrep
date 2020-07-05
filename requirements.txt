@@ -6,7 +6,7 @@ BeautifulSoup4
 tqdm >= 4.27
 opencc-python-reimplemented
 pandas-profiling >= 2.8.0
-nlp2 >= 1.6.9
+nlp2 >= 1.7.0
 nlp >= 0.3.0
 phraseg >= 1.1.8
 transformers >= 2.5.1
