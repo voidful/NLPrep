@@ -1,5 +1,6 @@
 import csv
 from tqdm import tqdm
+import nlp2
 
 
 # {
@@ -53,8 +54,13 @@ class MiddleFormat:
             target = " ".join(target)
             input = self.__run_sent_utility([input], sentu_func)[0]
         elif task == "gen":
+            if not nlp2.is_all_english(input):
+                input = " ".join(nlp2.split_sentence_to_array(input))
+                target = " ".join(nlp2.split_sentence_to_array(target))
             input, target = self.__run_sent_utility([input, target], sentu_func)
         elif task == "clas":
+            if not nlp2.is_all_english(input):
+                input = " ".join(nlp2.split_sentence_to_array(input))
             input, target = self.__run_sent_utility([input, target], sentu_func)
         elif task == "qa":
             input = " ".join(input)
@@ -65,7 +71,7 @@ class MiddleFormat:
         processed_pair = self.__run_pair_utility(path, pairsu_func)
         for pp in processed_pair:
             path, pairs = pp
-            with open(path, 'w', encoding='utf-8') as outfile:
+            with open(path + ".csv", 'w', encoding='utf-8') as outfile:
                 writer = csv.writer(outfile)
                 for input, target in tqdm(pairs):
                     input, target = self.__convert_to_taskformat(task, input, target, sentu_func)
