@@ -76,4 +76,4 @@ class MiddleFormat:
                 for input, target in tqdm(pairs):
                     input, target = self.__convert_to_taskformat(task, input, target, sentu_func)
                     writer.writerow([input, target])
-        return [i[0] for i in processed_pair]
+        return [i[0] + ".csv" for i in processed_pair]
