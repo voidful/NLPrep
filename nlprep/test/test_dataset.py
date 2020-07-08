@@ -2,9 +2,12 @@ import importlib
 import os
 import unittest
 
+import pytest
+
 
 class TestDataset(unittest.TestCase):
 
+    @pytest.mark.skip()
     def testType(self):
         ROOT_DIR = os.path.dirname(os.path.abspath(__file__ + "/../"))
         DATASET_DIR = os.path.join(ROOT_DIR, './datasets')
