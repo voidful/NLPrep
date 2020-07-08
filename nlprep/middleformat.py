@@ -48,7 +48,7 @@ class MiddleFormat:
                 sents[ind] = func(sent, **func_arg)
         return sents
 
-    def __convert_to_taskformat(self, task, input, target, sentu_func):
+    def convert_to_taskformat(self, task, input, target, sentu_func):
         if task == "tag":
             input = " ".join(input)
             target = " ".join(target)
@@ -74,6 +74,7 @@ class MiddleFormat:
             with open(path + ".csv", 'w', encoding='utf-8') as outfile:
                 writer = csv.writer(outfile)
                 for input, target in tqdm(pairs):
-                    input, target = self.__convert_to_taskformat(task, input, target, sentu_func)
-                    writer.writerow([input, target])
+                    input, target = self.convert_to_taskformat(task, input, target, sentu_func)
+                    row = [input] + target if isinstance(target, list) else [input, target]
+                    writer.writerow(row)
         return [i[0] + ".csv" for i in processed_pair]
