@@ -26,7 +26,7 @@
 - easy to adapt your own dataset and pre-processing utility  
 
 # Documentation
-Learn more from the [docs](https://voidful.github.io/nlprep/).  
+Learn more from the [docs](https://voidful.github.io/NLPrep/).  
 
 ## Quick Start
 ### Installing via pip
