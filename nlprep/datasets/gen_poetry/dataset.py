@@ -29,7 +29,7 @@ def toMiddleFormat(path):
         rows = csv.reader(csvfile)
         for row in rows:
             if len(row) > 0:
-                input = [k for k, v in phraseg.extract_sent(row[0], filter=True)]
+                input = " ".join([k for k, v in phraseg.extract_sent(row[0], filter=True)])
                 target = row[0]
                 dataset.add_data(input, target)
 

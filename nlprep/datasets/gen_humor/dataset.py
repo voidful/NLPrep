@@ -31,7 +31,7 @@ def toMiddleFormat(path):
         rows = csv.reader(csvfile)
         next(rows, None)
         for row in tqdm(rows):
-            input = [k for k, v in phraseg.extract_sent(row[1], filter=True)]
+            input = " ".join([k for k, v in phraseg.extract_sent(row[1], filter=True)])
             target = row[1]
             dataset.add_data(input, target)
     return dataset
