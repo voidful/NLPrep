@@ -99,6 +99,9 @@ class MiddleFormat:
         if len(self.processed_pairs) == 0:
             self.dump_list()
         df = pd.DataFrame(self.processed_pairs)
+
+        df.columns = ['input'] + ['target_' + str(i) for i in range(len(df.columns) - 1)] \
+            if len(df.columns) > 2 else ['input', 'target']
         profile = ProfileReport(df,
                                 html={'style': {'primary_color': '#999999', 'full_width': True}, 'minify_html': True},
                                 vars={'cat': {'unicode': True}},
