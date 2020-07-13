@@ -195,33 +195,33 @@
 </a>
 <h1>Datasets</h1>
 <h2 id="add-a-new-dataset">Add a new dataset<a class="headerlink" href="#add-a-new-dataset" title="Permanent link">¶</a></h2>
+<p>follow template from <code>template/dataset</code> </p>
 <ol>
-<li>create a folder with task and dataset name as --dataset parameter<br/>
-eg: /tag_clner</li>
-<li>create a blank <strong>init</strong>.py and dataset.py</li>
-<li>add DATASET_FILE_MAP inside dataset.py, value will be dataset url<br/>
-eg:
-<div class="highlight"><pre><span></span><code>DATASET_FILE_MAP = {
-    "train": "https://raw.githubusercontent.com/lancopku/Chinese-Literature-NER-RE-Dataset/master/ner/train.txt",
-    "test": "https://raw.githubusercontent.com/lancopku/Chinese-Literature-NER-RE-Dataset/master/ner/test.txt",
-    "validation": "https://raw.githubusercontent.com/lancopku/Chinese-Literature-NER-RE-Dataset/master/ner/validation.txt",
-}
+<li>edit task_datasetname to your task. eg: /tag_clner     </li>
+<li>edit dataset.py in <code>template/dataset/task_datasetname</code> <br/>
+Edit DATASETINFO 
+<div class="highlight"><pre><span></span><code><span class="n">DATASETINFO</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">'DATASET_FILE_MAP'</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">"dataset_name"</span><span class="p">:</span> <span class="s2">"dataset path"</span>  <span class="c1"># list for multiple detests in one tag</span>
+    <span class="p">},</span>
+    <span class="s1">'TASK'</span><span class="p">:</span> <span class="p">[</span><span class="s2">"gen"</span><span class="p">,</span> <span class="s2">"tag"</span><span class="p">,</span> <span class="s2">"clas"</span><span class="p">,</span> <span class="s2">"qa"</span><span class="p">],</span>
+    <span class="s1">'FULLNAME'</span><span class="p">:</span> <span class="s2">"Dataset Full Name"</span><span class="p">,</span>
+    <span class="s1">'REF'</span><span class="p">:</span> <span class="p">{</span><span class="s2">"Some dataset reference"</span><span class="p">:</span> <span class="s2">"useful link"</span><span class="p">},</span>
+    <span class="s1">'DESCRIPTION'</span><span class="p">:</span> <span class="s1">'Dataset description'</span>
+<span class="p">}</span>
+</code></pre></div>
+Implement <code>load</code> for pre-loading <code>'DATASET_FILE_MAP'</code>'s data
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">data</span>
+</code></pre></div>
+Implement <code>toMiddleFormat</code> for converting file to input and target
+<div class="highlight"><pre><span></span><code><span class="k">def</span> <span class="nf">toMiddleFormat</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">MiddleFormat</span><span class="p">(</span><span class="n">DATASETINFO</span><span class="p">)</span>
+    <span class="c1"># some file reading and processing</span>
+    <span class="n">dataset</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span><span class="s2">"input"</span><span class="p">,</span> <span class="s2">"target"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dataset</span>
 </code></pre></div></li>
-<li>create function call toMiddleFormat(path) to turn raw dataset into middleformat
-middleformat:
-<div class="highlight"><pre><span></span><code>{
-    "input": [
-        example1 input,
-        example2 input,
-        ...
-    ],
-    "target": [
-        example1 target,
-        example2 target,
-        ...
-    ]
-}
-</code></pre></div></li>
+<li>move <code>task_datasetname</code> folder to <code>nlprep/datasets</code></li>
 </ol>
 </article>
 </div>
