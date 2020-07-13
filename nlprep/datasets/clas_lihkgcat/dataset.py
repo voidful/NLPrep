@@ -2,14 +2,23 @@ import csv
 
 from nlprep.middleformat import MiddleFormat
 
-DATASET_FILE_MAP = {
-    "lihkgcat": ["https://media.githubusercontent.com/media/voidful/lihkg_dataset/master/lihkg_posts_title_cat.csv"]
+DATASETINFO = {
+    'DATASET_FILE_MAP': {
+        "lihkgcat": ["https://media.githubusercontent.com/media/voidful/lihkg_dataset/master/lihkg_posts_title_cat.csv"]
+    },
+    'TASK': "clas",
+    'FULLNAME': "LIHKG Post Title 分類資料",
+    'REF': {"Source": "https://github.com/ylchan87/LiHKG_Post_NLP"},
+    'DESCRIPTION': '根據title去分析屬於邊一個台'
 }
-TYPE = "clas"
+
+
+def load(data):
+    return data
 
 
 def toMiddleFormat(paths):
-    dataset = MiddleFormat(TYPE)
+    dataset = MiddleFormat(DATASETINFO)
     for path in paths:
         with open(path, encoding='utf8') as csvfile:
             rows = csv.reader(csvfile)

@@ -2,11 +2,17 @@ import csv
 
 from nlprep.middleformat import MiddleFormat
 
-TYPE = "clas"
+DATASETINFO = {
+    'TASK': "clas"
+}
+
+
+def load(data):
+    return data
 
 
 def toMiddleFormat(path):
-    dataset = MiddleFormat(TYPE)
+    dataset = MiddleFormat(DATASETINFO)
     with open(path, encoding='utf8') as csvfile:
         spamreader = csv.reader(csvfile)
         for row in spamreader:

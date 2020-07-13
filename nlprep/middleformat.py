@@ -2,6 +2,9 @@ import csv
 from tqdm import tqdm
 import nlp2
 
+from pandas_profiling import ProfileReport
+import pandas as pd
+
 
 # {
 #     "input": [
@@ -18,9 +21,15 @@ import nlp2
 
 class MiddleFormat:
 
-    def __init__(self, type):
+    def __init__(self, dataset_info):
         self.pairs = []
-        self.Type = type
+        self.processed_pairs = []
+
+        self.task = dataset_info['TASK']
+        self.file_map = dataset_info['DATASET_FILE_MAP']
+        self.fullname = dataset_info['FULLNAME']
+        self.ref = dataset_info['REF']
+        self.desc = dataset_info['DESCRIPTION']
 
     def add_data(self, input, target):
         self.pairs.append([input, target])
@@ -48,33 +57,50 @@ class MiddleFormat:
                 sents[ind] = func(sent, **func_arg)
         return sents
 
-    def convert_to_taskformat(self, task, input, target, sentu_func):
-        if task == "tag":
+    def convert_to_taskformat(self, input, target, sentu_func):
+        if self.task == "tag":
             input = " ".join(input)
             target = " ".join(target)
             input = self.__run_sent_utility([input], sentu_func)[0]
-        elif task == "gen":
+        elif self.task == "gen":
             if not nlp2.is_all_english(input):
                 input = " ".join(nlp2.split_sentence_to_array(input))
                 target = " ".join(nlp2.split_sentence_to_array(target))
             input, target = self.__run_sent_utility([input, target], sentu_func)
-        elif task == "clas":
+        elif self.task == "clas":
             if not nlp2.is_all_english(input):
                 input = " ".join(nlp2.split_sentence_to_array(input))
             input, target = self.__run_sent_utility([input, target], sentu_func)
-        elif task == "qa":
+        elif self.task == "qa":
             input = " ".join(input)
             input = self.__run_sent_utility([input], sentu_func)[0]
         return input, target
 
-    def dump(self, path, task, pairsu_func=[], sentu_func=[]):
+    def dump_list(self, pairsu_func=[], sentu_func=[], path=''):
+        result_list = []
         processed_pair = self.__run_pair_utility(path, pairsu_func)
         for pp in processed_pair:
             path, pairs = pp
-            with open(path + ".csv", 'w', encoding='utf-8') as outfile:
-                writer = csv.writer(outfile)
-                for input, target in tqdm(pairs):
-                    input, target = self.convert_to_taskformat(task, input, target, sentu_func)
-                    row = [input] + target if isinstance(target, list) else [input, target]
-                    writer.writerow(row)
-        return [i[0] + ".csv" for i in processed_pair]
+            for input, target in tqdm(pairs):
+                input, target = self.convert_to_taskformat(input, target, sentu_func)
+                res = [input] + target if isinstance(target, list) else [input, target]
+                result_list.append(res)
+
+        self.processed_pairs = result_list
+        return result_list
+
+    def dump_csvfile(self, path, pairsu_func=[], sentu_func=[]):
+        self.dump_list(pairsu_func=pairsu_func, sentu_func=sentu_func, path=path)
+        with open(path + ".csv", 'w', encoding='utf-8') as outfile:
+            writer = csv.writer(outfile)
+            writer.writerows(self.processed_pairs)
+
+    def get_report(self, report_name):
+        if len(self.processed_pairs) == 0:
+            self.dump_list()
+        df = pd.DataFrame(self.processed_pairs)
+        profile = ProfileReport(df,
+                                html={'style': {'primary_color': '#999999', 'full_width': True}, 'minify_html': True},
+                                vars={'cat': {'unicode': True}},
+                                title=report_name + " report")
+        return profile

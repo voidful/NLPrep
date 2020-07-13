@@ -1,66 +1,81 @@
 import argparse
 import importlib
-import os
-
 import nlp
-import nlp2
+
 from nlprep.file_utils import cached_path
 from nlprep.utils.sentlevel import *
 from nlprep.utils.pairslevel import *
-from pandas_profiling import ProfileReport
-import pandas as pd
+
 import os
 
 os.environ["PYTHONIOENCODING"] = "utf-8"
 
 
-def getDatasets(dataset, input_file_map=None, cache_dir=None):
+def convert_middleformat(dataset, input_file_map=None, cache_dir=None):
     sets = {}
-    dataset_map = input_file_map if input_file_map else dataset.DATASET_FILE_MAP
-    for k, v in dataset_map.items():
-        if isinstance(v, list):
-            for i, path in enumerate(v):
-                v[i] = cached_path(path, cache_dir=cache_dir)
-            dataset_path = v
-        elif isinstance(v, nlp.arrow_dataset.Dataset):
-            dataset_path = v
+    dataset_map = input_file_map if input_file_map else dataset.DATASETINFO['DATASET_FILE_MAP']
+    for map_name, map_dataset in dataset_map.items():
+        loaded_dataset = dataset.load(map_dataset)
+        if isinstance(loaded_dataset, list):
+            for i, path in enumerate(loaded_dataset):
+                loaded_dataset[i] = cached_path(path, cache_dir=cache_dir)
+            dataset_path = loaded_dataset
+        elif isinstance(loaded_dataset, nlp.arrow_dataset.Dataset):
+            dataset_path = loaded_dataset
         else:
-            dataset_path = cached_path(v, cache_dir=cache_dir)
-        sets[k] = dataset.toMiddleFormat(dataset_path)
+            dataset_path = cached_path(loaded_dataset, cache_dir=cache_dir)
+        sets[map_name] = dataset.toMiddleFormat(dataset_path)
     return sets
 
 
-def main():
+def list_all_datasets():
     dataset_dir = os.path.dirname(__file__) + '/datasets'
+    return list(
+        filter(lambda x: os.path.isdir(os.path.join(dataset_dir, x)) and '__pycache__' not in x,
+               os.listdir(dataset_dir)))
+
+
+def list_all_utilities():
+    return list(SentUtils.keys()) + list(PairsUtils.keys())
+
+
+def load_dataset(dataset_name):
+    return importlib.import_module('.' + dataset_name, 'nlprep.datasets')
+
+
+def load_utilities(util_name_list):
+    sent_utils = [SentUtils[i] for i in util_name_list if i in SentUtils]
+    pairs_utils = [PairsUtils[i] for i in util_name_list if i in PairsUtils]
+    # handle utility argument input
+    for util_list in [pairs_utils, sent_utils]:
+        for ind, util in enumerate(util_list):
+            util_arg = nlp2.function_argument_panel(util, show_func_name=True)
+            util_list[ind] = [util, util_arg]
+    return sent_utils, pairs_utils
+
+
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str,
-                        choices=list(
-                            filter(lambda x: os.path.isdir(os.path.join(dataset_dir, x)) and '__pycache__' not in x,
-                                   os.listdir(dataset_dir))),
+                        choices=list_all_datasets(),
                         required=True)
     parser.add_argument("--infile", type=str)
     parser.add_argument("--outdir", type=str, required=True)
     parser.add_argument("--cachedir", type=str)
     parser.add_argument("--report", action='store_true', help='dataset statistic report')
     parser.add_argument("--util", type=str, default=[], nargs='+',
-                        choices=list(SentUtils.keys()) + list(PairsUtils.keys()))
+                        choices=list_all_utilities())
     global arg
     arg = parser.parse_args()
 
+    # creat dir if not exist
+    nlp2.get_dir_with_notexist_create(arg.outdir)
+
     # load dataset and utility
-    sent_utils = [SentUtils[i] for i in arg.util if i in SentUtils]
-    pairs_utils = [PairsUtils[i] for i in arg.util if i in PairsUtils]
-    if not os.path.exists(arg.outdir):
-        os.mkdir(arg.outdir)
-    dataset = importlib.import_module('.' + arg.dataset, 'nlprep.datasets')
+    dataset = load_dataset(arg.dataset)
+    sent_utils, pairs_utils = load_utilities(arg.util)
 
-    # handle utility argument input
-    for util_list in [pairs_utils, sent_utils]:
-        for ind, util in enumerate(util_list):
-            util_arg = nlp2.function_argument_panel(util, show_func_name=True)
-            util_list[ind] = [util, util_arg]
-
-    print("Start processing data...")
+    # handle local file1
     if arg.infile:
         fname = nlp2.get_filename_from_path(arg.infile)
         input_map = {
@@ -69,17 +84,12 @@ def main():
     else:
         input_map = None
 
-    for k, middleformat in getDatasets(dataset, input_file_map=input_map, cache_dir=arg.cachedir).items():
-        paths = middleformat.dump(os.path.join(arg.outdir, k), middleformat.Type, pairs_utils, sent_utils)
+    print("Start processing data...")
+    for k, middleformat in convert_middleformat(dataset, input_file_map=input_map, cache_dir=arg.cachedir).items():
+        middleformat.dump_csvfile(os.path.join(arg.outdir, k), pairs_utils, sent_utils)
         if arg.report:
-            for path in paths:
-                df = pd.read_csv(path, header=None)
-                profile = ProfileReport(df,
-                                        html={'style': {'theme': 'flatly'}, 'minify_html': True},
-                                        vars={'cat': {'unicode': True}},
-                                        title=k + " report")
-                path = path.replace('.csv', '')
-                profile.to_file(path + "_report.html")
+            profile = middleformat.get_report(k)
+            profile.to_file(os.path.join(arg.outdir, k + "_report.html"))
 
 
 if __name__ == "__main__":

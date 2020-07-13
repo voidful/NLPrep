@@ -13,6 +13,18 @@ optional arguments:
   --infile      local dataset path
   --report      generate a html statistics report
 ```
+## Python
+```python
+import os
+import nlprep
+datasets = nlprep.list_all_datasets() 
+ds = nlprep.load_dataset(datasets[0])
+ds_info = ds.DATASETINFO
+for ds_name, mf in nlprep.convert_middleformat(ds).items():
+    print(ds_name, ds_info, mf.dump_list()[:3])
+    profile = mf.get_report(ds_name)
+    profile.to_file(os.path.join('./', ds_name + "_report.html"))
+```
 
 ## Example
 Download udicstm dataset that
@@ -21,7 +33,7 @@ nlprep --dataset clas_udicstm --outdir sentiment --util splitdata --report
 ```
 Show result file
 ```text
-!head -10 ./sentiment/udicstm_valid 
+!head -10 ./sentiment/udicstm_valid.csv 
 
 會生孩子不等於會當父母，這可能讓許多人無法接受，不少父母打着“愛孩子”的旗號做了許多阻礙孩子心智發展的事，甚至傷害了孩子卻還不知道，反而怪孩子。看了這本書我深受教育，我慶幸在寶寶才七個月就看到了這本書，而不是七歲或者十七歲，可能會讓我在教育孩子方面少走許多彎路。非常感謝尹建莉老師，希望她再寫出更好的書。也希望衆多的年輕父母好好看看這本書。我已向許多朋友推薦此書。,positive
 第一，一插入無線上網卡（usb接口）就自動關機；第二，待機時間沒有宣稱的那麼長久；第三，比較容易沾手印。,negative

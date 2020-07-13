@@ -1,22 +1,28 @@
 from nlprep.middleformat import MiddleFormat
-import nlp2
 import csv
 
-DATASET_FILE_MAP = {
-    "engcmn": "https://raw.githubusercontent.com/voidful/transformer-nmt/master/data/cmn.txt",
-    "engyue": "https://raw.githubusercontent.com/voidful/transformer-nmt/master/data/yue.txt"
+DATASETINFO = {
+    'DATASET_FILE_MAP': {
+        "engcmn": "https://raw.githubusercontent.com/voidful/transformer-nmt/master/data/cmn.txt",
+        "engyue": "https://raw.githubusercontent.com/voidful/transformer-nmt/master/data/yue.txt"
+    },
+    'TASK': "gen",
+    'FULLNAME': "Tab-delimited Bilingual Sentence Pairs",
+    'REF': {"Source": "http://www.manythings.org/anki/"},
+    'DESCRIPTION': 'English + TAB + The Other Language + TAB + Attribution'
 }
-TYPE = "gen"
+
+
+def load(data):
+    return data
+
 
 def toMiddleFormat(path):
-    dataset = MiddleFormat(TYPE)
+    dataset = MiddleFormat(DATASETINFO)
     with open(path, encoding='utf8') as csvfile:
         rows = csv.reader(csvfile, delimiter='\t')
         for row in rows:
-            input = nlp2.split_sentence_to_array(row[0], True)
-            target = nlp2.split_sentence_to_array(row[1], True)
-            if len(input) + len(target) <= 512:
-                input = " ".join(input)
-                target = " ".join(target)
-                dataset.add_data(input, target)
+            input = row[0]
+            target = row[1]
+            dataset.add_data(input, target)
     return dataset
