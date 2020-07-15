@@ -1,4 +1,4 @@
-import csv
+import re
 import nlp2
 import random
 

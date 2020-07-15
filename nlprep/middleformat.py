@@ -26,10 +26,10 @@ class MiddleFormat:
         self.processed_pairs = []
 
         self.task = dataset_info['TASK']
-        self.file_map = dataset_info['DATASET_FILE_MAP']
-        self.fullname = dataset_info['FULLNAME']
-        self.ref = dataset_info['REF']
-        self.desc = dataset_info['DESCRIPTION']
+        self.file_map = dataset_info.get('DATASET_FILE_MAP', {})
+        self.fullname = dataset_info.get('FULLNAME', "")
+        self.ref = dataset_info.get('REF', "")
+        self.desc = dataset_info.get('DESCRIPTION', "")
 
     def add_data(self, input, target):
         self.pairs.append([input, target])
