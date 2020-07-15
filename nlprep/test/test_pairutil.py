@@ -20,6 +20,7 @@ class TestDataset(unittest.TestCase):
         dummyPair = [["a", "b"]] * 10
 
         splited = pair_util.splitdata(dummyPath, dummyPair, train_ratio=0.7, test_ratio=0.2, valid_ratio=0.1)
+        print(splited)
         for s in splited:
             if "train" in s[0]:
                 self.assertTrue(len(s[1]) == 7)

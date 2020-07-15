@@ -77,28 +77,29 @@ class MiddleFormat:
         return input, target
 
     def dump_list(self, pairsu_func=[], sentu_func=[], path=''):
-        result_list = []
+        self.processed_pairs = []
         processed_pair = self.__run_pair_utility(path, pairsu_func)
         for pp in processed_pair:
             path, pairs = pp
+            result_list = []
             for input, target in tqdm(pairs):
                 input, target = self.convert_to_taskformat(input, target, sentu_func)
                 res = [input] + target if isinstance(target, list) else [input, target]
                 result_list.append(res)
-
-        self.processed_pairs = result_list
-        return result_list
+            yield path, result_list
+            self.processed_pairs.extend(result_list)
 
     def dump_csvfile(self, path, pairsu_func=[], sentu_func=[]):
-        self.dump_list(pairsu_func=pairsu_func, sentu_func=sentu_func, path=path)
-        with open(path + ".csv", 'w', encoding='utf-8') as outfile:
-            writer = csv.writer(outfile)
-            writer.writerows(self.processed_pairs)
+        for dump_path, dump_pairs in self.dump_list(pairsu_func=pairsu_func, sentu_func=sentu_func, path=path):
+            with open(dump_path + ".csv", 'w', encoding='utf-8') as outfile:
+                writer = csv.writer(outfile)
+                writer.writerows(dump_pairs)
 
     def get_report(self, report_name):
         if len(self.processed_pairs) == 0:
-            self.dump_list()
+            [_ for _ in self.dump_list()]
         df = pd.DataFrame(self.processed_pairs)
+
         df.columns = ['input'] + ['target_' + str(i) for i in range(len(df.columns) - 1)] \
             if len(df.columns) > 2 else ['input', 'target']
         profile = ProfileReport(df,
