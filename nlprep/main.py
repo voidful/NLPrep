@@ -28,8 +28,7 @@ def convert_middleformat(dataset, input_file_map=None, cache_dir=None):
     return sets
 
 
-def list_all_datasets():
-    ignore_list = ["clas_csv"]
+def list_all_datasets(ignore_list=[]):
     dataset_dir = os.path.dirname(__file__) + '/datasets'
     return list(filter(
         lambda x: os.path.isdir(os.path.join(dataset_dir, x)) and '__pycache__' not in x and x not in ignore_list,
