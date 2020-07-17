@@ -8,6 +8,7 @@ separate_token = "[SEP]"
 
 
 def splitdata(path, pair, seed=612, train_ratio=0.7, test_ratio=0.2, valid_ratio=0.1):
+    """split data into "training testing and validation"""
     random.seed(seed)
     random.shuffle(pair)
     train_ratio = float(train_ratio)
@@ -23,6 +24,7 @@ def splitdata(path, pair, seed=612, train_ratio=0.7, test_ratio=0.2, valid_ratio
 
 
 def setSepToken(path, pair, sep_token="[SEP]"):
+    """set SEP token for different pre-trained model"""
     global separate_token
     separate_token = sep_token
     for ind, p in enumerate(pair):
@@ -32,6 +34,7 @@ def setSepToken(path, pair, sep_token="[SEP]"):
 
 
 def setMaxLen(path, pair, maxlen=512, tokenizer="word", with_target=[True, False], handle_over=['remove', 'slice']):
+    """set model maximum length"""
     global separate_token
     maxlen = int(maxlen)
     if tokenizer == 'word':
@@ -65,8 +68,8 @@ def setMaxLen(path, pair, maxlen=512, tokenizer="word", with_target=[True, False
     return [[path, small_than_max_pairs]]
 
 
-# control all same tag data ratio in dataset
 def setAllSameTagRate(path, pair, seed=612, rate=0.27):
+    """set all same tag data ratio in tagging dataset"""
     random.seed(seed)
     allsame_pair = []
     notsame_pair = []
@@ -84,8 +87,8 @@ def setAllSameTagRate(path, pair, seed=612, rate=0.27):
     return [[path, result]]
 
 
-# remove all same tag in tagging dataset
 def rmAllSameTag(path, pair):
+    """remove all same tag in tagging dataset"""
     result_pair = []
     for p in pair:
         if len(set(p[1])) > 1:
@@ -94,6 +97,7 @@ def rmAllSameTag(path, pair):
 
 
 def reverse(path, pair):
+    """swap input and target data"""
     for p in pair:
         p.reverse()
     return [[path, pair]]

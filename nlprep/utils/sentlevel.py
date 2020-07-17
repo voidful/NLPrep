@@ -8,10 +8,12 @@ cc_s2t = OpenCC('s2t')
 
 
 def s2t(convt):
+    """simplify chines to traditional chines"""
     return cc_s2t.convert(convt)
 
 
 def t2s(convt):
+    """traditional chines to simplify chines"""
     return cc_t2s.convert(convt)
 
 
