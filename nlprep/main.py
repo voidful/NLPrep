@@ -11,23 +11,6 @@ import os
 os.environ["PYTHONIOENCODING"] = "utf-8"
 
 
-def convert_middleformat(dataset, input_file_map=None, cache_dir=None):
-    sets = {}
-    dataset_map = input_file_map if input_file_map else dataset.DATASETINFO['DATASET_FILE_MAP']
-    for map_name, map_dataset in dataset_map.items():
-        loaded_dataset = dataset.load(map_dataset)
-        if isinstance(loaded_dataset, list):
-            for i, path in enumerate(loaded_dataset):
-                loaded_dataset[i] = cached_path(path, cache_dir=cache_dir)
-            dataset_path = loaded_dataset
-        elif isinstance(loaded_dataset, nlp.arrow_dataset.Dataset):
-            dataset_path = loaded_dataset
-        else:
-            dataset_path = cached_path(loaded_dataset, cache_dir=cache_dir)
-        sets[map_name] = dataset.toMiddleFormat(dataset_path)
-    return sets
-
-
 def list_all_datasets(ignore_list=[]):
     dataset_dir = os.path.dirname(__file__) + '/datasets'
     return list(filter(
@@ -43,15 +26,32 @@ def load_dataset(dataset_name):
     return importlib.import_module('.' + dataset_name, 'nlprep.datasets')
 
 
-def load_utilities(util_name_list):
+def load_utilities(util_name_list, disable_input_panel=False):
     sent_utils = [SentUtils[i] for i in util_name_list if i in SentUtils]
     pairs_utils = [PairsUtils[i] for i in util_name_list if i in PairsUtils]
     # handle utility argument input
     for util_list in [pairs_utils, sent_utils]:
         for ind, util in enumerate(util_list):
-            util_arg = nlp2.function_argument_panel(util, show_func_name=True)
+            util_arg = nlp2.function_argument_panel(util, show_func_name=True, disable_input_panel=disable_input_panel)
             util_list[ind] = [util, util_arg]
     return sent_utils, pairs_utils
+
+
+def convert_middleformat(dataset, input_file_map=None, cache_dir=None):
+    sets = {}
+    dataset_map = input_file_map if input_file_map else dataset.DATASETINFO['DATASET_FILE_MAP']
+    for map_name, map_dataset in dataset_map.items():
+        loaded_dataset = dataset.load(map_dataset)
+        if isinstance(loaded_dataset, list):
+            for i, path in enumerate(loaded_dataset):
+                loaded_dataset[i] = cached_path(path, cache_dir=cache_dir)
+            dataset_path = loaded_dataset
+        elif isinstance(loaded_dataset, nlp.arrow_dataset.Dataset):
+            dataset_path = loaded_dataset
+        else:
+            dataset_path = cached_path(loaded_dataset, cache_dir=cache_dir)
+        sets[map_name] = dataset.toMiddleFormat(dataset_path)
+    return sets
 
 
 def main():
