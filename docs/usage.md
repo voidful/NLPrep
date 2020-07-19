@@ -29,7 +29,7 @@ for ds_name, mf in nlprep.convert_middleformat(ds).items():
 ## Example
 Download udicstm dataset that
 ```bash
-nlprep --dataset clas_udicstm --outdir sentiment --util splitdata --report
+nlprep --dataset clas_udicstm --outdir sentiment --util splitData --report
 ```
 Show result file
 ```text

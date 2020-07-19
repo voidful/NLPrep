@@ -7,8 +7,8 @@ import nlp2
 separate_token = "[SEP]"
 
 
-def splitdata(path, pair, seed=612, train_ratio=0.7, test_ratio=0.2, valid_ratio=0.1):
-    """split data into "training testing and validation"""
+def splitData(path, pair, seed=612, train_ratio=0.7, test_ratio=0.2, valid_ratio=0.1):
+    """split data into training testing and validation"""
     random.seed(seed)
     random.shuffle(pair)
     train_ratio = float(train_ratio)
@@ -21,6 +21,14 @@ def splitdata(path, pair, seed=612, train_ratio=0.7, test_ratio=0.2, valid_ratio
     return [[path + "_train", pair[:train_num]],
             [path + "_test", pair[train_num:test_num]],
             [path + "_valid", pair[test_num:valid_num]]]
+
+
+def splitDataIntoPart(path, pair, seed=712, part=4):
+    """split data into part because of not enough memory"""
+    random.seed(seed)
+    random.shuffle(pair)
+    part = int(len(pair) / part) + 1
+    return [[path + "_" + str(int(i / part)), pair[i:i + part]] for i in range(0, len(pair), part)]
 
 
 def setSepToken(path, pair, sep_token="[SEP]"):

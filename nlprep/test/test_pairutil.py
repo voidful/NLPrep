@@ -19,7 +19,7 @@ class TestDataset(unittest.TestCase):
         dummyPath = "path"
         dummyPair = [["a", "b"]] * 10
 
-        splited = pair_util.splitdata(dummyPath, dummyPair, train_ratio=0.7, test_ratio=0.2, valid_ratio=0.1)
+        splited = pair_util.splitData(dummyPath, dummyPair, train_ratio=0.7, test_ratio=0.2, valid_ratio=0.1)
         print(splited)
         for s in splited:
             if "train" in s[0]:
@@ -51,3 +51,9 @@ class TestDataset(unittest.TestCase):
                                         with_target=True, handle_over='remove')
         self.assertTrue(0 == len(processed[0][1]))
 
+    def testsplitDataIntoPart(self):
+        pair_util = nlprep.utils.pairslevel
+        dummyPath = "path"
+        dummyPair = [["a", "b"]] * 10
+        processed = pair_util.splitDataIntoPart(dummyPath, dummyPair, part=4)
+        print(processed)
