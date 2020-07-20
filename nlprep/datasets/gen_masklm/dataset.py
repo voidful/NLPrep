@@ -24,7 +24,7 @@ def toMiddleFormat(path):
         line = nlp2.clean_all(line)
 
         if len(nlp2.split_sentence_to_array(line)) > 1:
-            phrases = list((phraseg.extract(sent=line)).keys())
+            phrases = list((phraseg.extract(sent=line, merge_overlap=False)).keys())
             reg = "[0-9]+|[a-zA-Z]+\'*[a-z]*|[\w]" + "|" + punctuations
             reg = "|".join(phrases) + "|" + reg
             input_sent = re.findall(reg, line, re.UNICODE)

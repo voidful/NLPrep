@@ -5,7 +5,6 @@ import nlp2
 from pandas_profiling import ProfileReport
 import pandas as pd
 
-
 # {
 #     "input": [
 #         example1 input,
@@ -18,6 +17,8 @@ import pandas as pd
 #         ...
 #     ]
 # }
+from nlprep.utils.pairslevel import separate_token
+
 
 class MiddleFormat:
 
@@ -34,7 +35,7 @@ class MiddleFormat:
     def add_data(self, input, target):
         self.pairs.append([input, target])
 
-    def __run_pair_utility(self, path, pairsu_func=[]):
+    def _run_pair_utility(self, path, pairsu_func=[]):
         processed_pair = []
         if len(pairsu_func) > 0:
             for func_pack in pairsu_func:
@@ -51,34 +52,45 @@ class MiddleFormat:
             processed_pair = [[path, self.pairs]]
         return processed_pair
 
-    def __run_sent_utility(self, sents, sentu_func=[]):
+    def _run_sent_utility(self, sents, sentu_func=[]):
         for ind, sent in enumerate(sents):
             for func, func_arg in sentu_func:
                 sents[ind] = func(sent, **func_arg)
         return sents
 
+    def _normalize_input_target(self, input, target=None):
+
+        if input is list:
+            input = " ".join(input)
+        if target is list:
+            target = " ".join(target)
+
+        if isinstance(input, str) and not nlp2.is_all_english(input):
+            split_sep_tok = " ".join(nlp2.split_sentence_to_array(separate_token))
+            input = " ".join(nlp2.split_sentence_to_array(input)).replace(split_sep_tok, separate_token)
+
+        if isinstance(target, str) and not nlp2.is_all_english(target):
+            target = " ".join(nlp2.split_sentence_to_array(target))
+        return input, target
+
     def convert_to_taskformat(self, input, target, sentu_func):
         if self.task == "tag":
-            input = " ".join(input)
-            target = " ".join(target)
-            input = self.__run_sent_utility([input], sentu_func)[0]
+            input, target = self._normalize_input_target(input, target)
+            input = self._run_sent_utility([input], sentu_func)[0]
         elif self.task == "gen":
-            if not nlp2.is_all_english(input):
-                input = " ".join(nlp2.split_sentence_to_array(input))
-                target = " ".join(nlp2.split_sentence_to_array(target))
-            input, target = self.__run_sent_utility([input, target], sentu_func)
+            input, target = self._normalize_input_target(input, target)
+            input, target = self._run_sent_utility([input, target], sentu_func)
         elif self.task == "clas":
-            if not nlp2.is_all_english(input):
-                input = " ".join(nlp2.split_sentence_to_array(input))
-            input, target = self.__run_sent_utility([input, target], sentu_func)
+            input, target = self._normalize_input_target(input, target)
+            input, target = self._run_sent_utility([input, target], sentu_func)
         elif self.task == "qa":
-            input = " ".join(input)
-            input = self.__run_sent_utility([input], sentu_func)[0]
+            input, _ = self._normalize_input_target(input)
+            input = self._run_sent_utility([input], sentu_func)[0]
         return input, target
 
     def dump_list(self, pairsu_func=[], sentu_func=[], path=''):
         self.processed_pairs = []
-        processed_pair = self.__run_pair_utility(path, pairsu_func)
+        processed_pair = self._run_pair_utility(path, pairsu_func)
         for pp in processed_pair:
             path, pairs = pp
             result_list = []
