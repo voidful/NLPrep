@@ -60,17 +60,18 @@ class MiddleFormat:
 
     def _normalize_input_target(self, input, target=None):
 
-        if input is list:
-            input = " ".join(input)
-        if target is list:
-            target = " ".join(target)
-
         if isinstance(input, str) and not nlp2.is_all_english(input):
             split_sep_tok = " ".join(nlp2.split_sentence_to_array(separate_token))
             input = " ".join(nlp2.split_sentence_to_array(input)).replace(split_sep_tok, separate_token)
 
         if isinstance(target, str) and not nlp2.is_all_english(target):
             target = " ".join(nlp2.split_sentence_to_array(target))
+
+        if isinstance(input, list):
+            input = " ".join(input)
+        if isinstance(target, list):
+            target = " ".join(target)
+
         return input, target
 
     def convert_to_taskformat(self, input, target, sentu_func):
