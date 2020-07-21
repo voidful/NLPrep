@@ -2,6 +2,8 @@ import re
 import nlp2
 import random
 
+from tqdm import tqdm
+
 from nlprep.middleformat import MiddleFormat
 
 DATASETINFO = {
@@ -20,7 +22,7 @@ def toMiddleFormat(path):
     dataset = MiddleFormat(DATASETINFO)
     phraseg = Phraseg(path)
 
-    for line in nlp2.read_files_yield_lines(path):
+    for line in tqdm(nlp2.read_files_yield_lines(path)):
         line = nlp2.clean_all(line)
 
         if len(nlp2.split_sentence_to_array(line)) > 1:
