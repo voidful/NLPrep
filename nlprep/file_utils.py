@@ -3,163 +3,59 @@ Utilities for working with the local dataset cache.
 This file is adapted from the AllenNLP library at https://github.com/allenai/allennlp
 Copyright by the AllenNLP authors.
 """
+"""
+Utilities for working with the local dataset cache.
+"""
 
-import fnmatch
-import json
-import logging
+import glob
 import os
-import sys
+import logging
 import tempfile
-from contextlib import contextmanager
-from functools import partial, wraps
-from hashlib import sha256
-from typing import Optional
+import json
+from os import PathLike
 from urllib.parse import urlparse
+from pathlib import Path
+from typing import Optional, Tuple, Union, IO, Callable, Set, List, Iterator, Iterable
+from hashlib import sha256
+from functools import wraps
+from zipfile import ZipFile, is_zipfile
+import tarfile
+import shutil
 
 import boto3
-import requests
-from botocore.config import Config
-from botocore.exceptions import ClientError
+import botocore
+from botocore.exceptions import ClientError, EndpointConnectionError
 from filelock import FileLock
-from tqdm.auto import tqdm
+import requests
+from requests.adapters import HTTPAdapter
+from requests.exceptions import ConnectionError
+from requests.packages.urllib3.util.retry import Retry
+from tqdm import tqdm
 
-from nlprep import __version__
+logger = logging.getLogger(__name__)
 
+CACHE_ROOT = Path(os.getenv("NLPREP_CACHE_ROOT", Path.home() / ".nlprep"))
+CACHE_DIRECTORY = str(CACHE_ROOT / "cache")
+DEPRECATED_CACHE_DIRECTORY = str(CACHE_ROOT / "datasets")
 
-logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
+# This variable was deprecated in 0.7.2 since we use a single folder for caching
+# all types of files (datasets, models, etc.)
+DATASET_CACHE = CACHE_DIRECTORY
 
-try:
-    USE_TF = os.environ.get("USE_TF", "AUTO").upper()
-    USE_TORCH = os.environ.get("USE_TORCH", "AUTO").upper()
-    if USE_TORCH in ("1", "ON", "YES", "AUTO") and USE_TF not in ("1", "ON", "YES"):
-        import torch
-
-        _torch_available = True  # pylint: disable=invalid-name
-        logger.info("PyTorch version {} available.".format(torch.__version__))
-    else:
-        logger.info("Disabling PyTorch because USE_TF is set")
-        _torch_available = False
-except ImportError:
-    _torch_available = False  # pylint: disable=invalid-name
-
-try:
-    USE_TF = os.environ.get("USE_TF", "AUTO").upper()
-    USE_TORCH = os.environ.get("USE_TORCH", "AUTO").upper()
-
-    if USE_TF in ("1", "ON", "YES", "AUTO") and USE_TORCH not in ("1", "ON", "YES"):
-        import tensorflow as tf
-
-        assert hasattr(tf, "__version__") and int(tf.__version__[0]) >= 2
-        _tf_available = True  # pylint: disable=invalid-name
-        logger.info("TensorFlow version {} available.".format(tf.__version__))
-    else:
-        logger.info("Disabling Tensorflow because USE_TORCH is set")
-        _tf_available = False
-except (ImportError, AssertionError):
-    _tf_available = False  # pylint: disable=invalid-name
-
-try:
-    from torch.hub import _get_torch_home
-
-    torch_cache_home = _get_torch_home()
-except ImportError:
-    torch_cache_home = os.path.expanduser(
-        os.getenv("TORCH_HOME", os.path.join(os.getenv("XDG_CACHE_HOME", "~/.cache"), "torch"))
-    )
-default_cache_path = os.path.join(torch_cache_home, "transformers")
-
-try:
-    from pathlib import Path
-
-    PYTORCH_PRETRAINED_BERT_CACHE = Path(
-        os.getenv("PYTORCH_TRANSFORMERS_CACHE", os.getenv("PYTORCH_PRETRAINED_BERT_CACHE", default_cache_path))
-    )
-except (AttributeError, ImportError):
-    PYTORCH_PRETRAINED_BERT_CACHE = os.getenv(
-        "PYTORCH_TRANSFORMERS_CACHE", os.getenv("PYTORCH_PRETRAINED_BERT_CACHE", default_cache_path)
+# Warn if the user is still using the deprecated cache directory.
+if os.path.exists(DEPRECATED_CACHE_DIRECTORY):
+    logger = logging.getLogger(__name__)
+    logger.warning(
+        f"Deprecated cache directory found ({DEPRECATED_CACHE_DIRECTORY}).  "
+        f"Please remove this directory from your system to free up space."
     )
 
-PYTORCH_TRANSFORMERS_CACHE = PYTORCH_PRETRAINED_BERT_CACHE  # Kept for backward compatibility
-TRANSFORMERS_CACHE = PYTORCH_PRETRAINED_BERT_CACHE  # Kept for backward compatibility
 
-WEIGHTS_NAME = "pytorch_model.bin"
-TF2_WEIGHTS_NAME = "tf_model.h5"
-TF_WEIGHTS_NAME = "model.ckpt"
-CONFIG_NAME = "config.json"
-MODEL_CARD_NAME = "modelcard.json"
-
-
-MULTIPLE_CHOICE_DUMMY_INPUTS = [[[0], [1]], [[0], [1]]]
-DUMMY_INPUTS = [[7, 6, 0, 0, 1], [1, 2, 3, 0, 0], [0, 0, 0, 4, 5]]
-DUMMY_MASK = [[1, 1, 1, 1, 1], [1, 1, 1, 0, 0], [0, 0, 0, 1, 1]]
-
-S3_BUCKET_PREFIX = "https://s3.amazonaws.com/models.huggingface.co/bert"
-CLOUDFRONT_DISTRIB_PREFIX = "https://d2ws9o8vfrpkyk.cloudfront.net"
-
-
-def is_torch_available():
-    return _torch_available
-
-
-def is_tf_available():
-    return _tf_available
-
-
-def add_start_docstrings(*docstr):
-    def docstring_decorator(fn):
-        fn.__doc__ = "".join(docstr) + (fn.__doc__ if fn.__doc__ is not None else "")
-        return fn
-
-    return docstring_decorator
-
-
-def add_start_docstrings_to_callable(*docstr):
-    def docstring_decorator(fn):
-        class_name = ":class:`~transformers.{}`".format(fn.__qualname__.split(".")[0])
-        intro = "   The {} forward method, overrides the :func:`__call__` special method.".format(class_name)
-        note = r"""
-
-    .. note::
-        Although the recipe for forward pass needs to be defined within
-        this function, one should call the :class:`Module` instance afterwards
-        instead of this since the former takes care of running the
-        pre and post processing steps while the latter silently ignores them.
-        """
-        fn.__doc__ = intro + note + "".join(docstr) + (fn.__doc__ if fn.__doc__ is not None else "")
-        return fn
-
-    return docstring_decorator
-
-
-def add_end_docstrings(*docstr):
-    def docstring_decorator(fn):
-        fn.__doc__ = fn.__doc__ + "".join(docstr)
-        return fn
-
-    return docstring_decorator
-
-
-def is_remote_url(url_or_filename):
-    parsed = urlparse(url_or_filename)
-    return parsed.scheme in ("http", "https", "s3")
-
-
-def hf_bucket_url(identifier, postfix=None, cdn=False) -> str:
-    endpoint = CLOUDFRONT_DISTRIB_PREFIX if cdn else S3_BUCKET_PREFIX
-    if postfix is None:
-        return "/".join((endpoint, identifier))
-    else:
-        return "/".join((endpoint, identifier, postfix))
-
-
-def url_to_filename(url, etag=None):
+def url_to_filename(url: str, etag: str = None) -> str:
     """
     Convert `url` into a hashed filename in a repeatable way.
     If `etag` is specified, append its hash to the url's, delimited
     by a period.
-    If the url ends with .h5 (Keras HDF5 weights) adds '.h5' to the name
-    so that TF 2.0 can identify it as a HDF5 file
-    (see https://github.com/tensorflow/tensorflow/blob/00fad90125b18b80fe054de1055770cfb8fe4ba3/tensorflow/python/keras/engine/network.py#L1380)
     """
     url_bytes = url.encode("utf-8")
     url_hash = sha256(url_bytes)
@@ -170,31 +66,26 @@ def url_to_filename(url, etag=None):
         etag_hash = sha256(etag_bytes)
         filename += "." + etag_hash.hexdigest()
 
-    if url.endswith(".h5"):
-        filename += ".h5"
-
     return filename
 
 
-def filename_to_url(filename, cache_dir=None):
+def filename_to_url(filename: str, cache_dir: Union[str, Path] = None) -> Tuple[str, str]:
     """
-    Return the url and etag (which may be ``None``) stored for `filename`.
-    Raise ``EnvironmentError`` if `filename` or its stored metadata do not exist.
+    Return the url and etag (which may be `None`) stored for `filename`.
+    Raise `FileNotFoundError` if `filename` or its stored metadata do not exist.
     """
     if cache_dir is None:
-        cache_dir = TRANSFORMERS_CACHE
-    if isinstance(cache_dir, Path):
-        cache_dir = str(cache_dir)
+        cache_dir = CACHE_DIRECTORY
 
     cache_path = os.path.join(cache_dir, filename)
     if not os.path.exists(cache_path):
-        raise EnvironmentError("file {} not found".format(cache_path))
+        raise FileNotFoundError("file {} not found".format(cache_path))
 
     meta_path = cache_path + ".json"
     if not os.path.exists(meta_path):
-        raise EnvironmentError("file {} not found".format(meta_path))
+        raise FileNotFoundError("file {} not found".format(meta_path))
 
-    with open(meta_path, encoding="utf-8") as meta_file:
+    with open(meta_path) as meta_file:
         metadata = json.load(meta_file)
     url = metadata["url"]
     etag = metadata["etag"]
@@ -203,52 +94,120 @@ def filename_to_url(filename, cache_dir=None):
 
 
 def cached_path(
-    url_or_filename, cache_dir=None, force_download=False, proxies=None, resume_download=False, user_agent=None
-) -> Optional[str]:
+        url_or_filename: Union[str, PathLike],
+        cache_dir: Union[str, Path] = None,
+        extract_archive: bool = False,
+        force_extract: bool = False,
+) -> str:
     """
     Given something that might be a URL (or might be a local path),
     determine which. If it's a URL, download the file and cache it, and
     return the path to the cached file. If it's already a local path,
     make sure the file exists and then return the path.
-    Args:
-        cache_dir: specify a cache directory to save the file to (overwrite the default cache dir).
-        force_download: if True, re-dowload the file even if it's already cached in the cache dir.
-        resume_download: if True, resume the download if incompletly recieved file is found.
-        user_agent: Optional string or dict that will be appended to the user-agent on remote requests.
 
-    Return:
-        None in case of non-recoverable file (non-existent or inaccessible url + no cache on disk).
-        Local path (string) otherwise
+    # Parameters
+
+    url_or_filename : `Union[str, Path]`
+        A URL or local file to parse and possibly download.
+
+    cache_dir : `Union[str, Path]`, optional (default = `None`)
+        The directory to cache downloads.
+
+    extract_archive : `bool`, optional (default = `False`)
+        If `True`, then zip or tar.gz archives will be automatically extracted.
+        In which case the directory is returned.
+
+    force_extract : `bool`, optional (default = `False`)
+        If `True` and the file is an archive file, it will be extracted regardless
+        of whether or not the extracted directory already exists.
     """
     if cache_dir is None:
-        cache_dir = TRANSFORMERS_CACHE
-    if isinstance(url_or_filename, Path):
-        url_or_filename = str(url_or_filename)
-    if isinstance(cache_dir, Path):
-        cache_dir = str(cache_dir)
+        cache_dir = CACHE_DIRECTORY
 
-    if is_remote_url(url_or_filename):
+    if isinstance(url_or_filename, PathLike):
+        url_or_filename = str(url_or_filename)
+
+    # If we're using the /a/b/foo.zip!c/d/file.txt syntax, handle it here.
+    exclamation_index = url_or_filename.find("!")
+    if extract_archive and exclamation_index >= 0:
+        archive_path = url_or_filename[:exclamation_index]
+        archive_path = cached_path(archive_path, cache_dir, True, force_extract)
+        if not os.path.isdir(archive_path):
+            raise ValueError(
+                f"{url_or_filename} uses the ! syntax, but does not specify an archive file."
+            )
+        return os.path.join(archive_path, url_or_filename[exclamation_index + 1:])
+
+    url_or_filename = os.path.expanduser(url_or_filename)
+    parsed = urlparse(url_or_filename)
+
+    file_path: str
+    extraction_path: Optional[str] = None
+
+    if parsed.scheme in ("http", "https", "s3"):
         # URL, so get it from the cache (downloading if necessary)
-        return get_from_cache(
-            url_or_filename,
-            cache_dir=cache_dir,
-            force_download=force_download,
-            proxies=proxies,
-            resume_download=resume_download,
-            user_agent=user_agent,
-        )
+        file_path = get_from_cache(url_or_filename, cache_dir)
+
+        if extract_archive and (is_zipfile(file_path) or tarfile.is_tarfile(file_path)):
+            # This is the path the file should be extracted to.
+            # For example ~/.allennlp/cache/234234.21341 -> ~/.allennlp/cache/234234.21341-extracted
+            extraction_path = file_path + "-extracted"
+
     elif os.path.exists(url_or_filename):
         # File, and it exists.
-        return url_or_filename
-    elif urlparse(url_or_filename).scheme == "":
+        file_path = url_or_filename
+
+        if extract_archive and (is_zipfile(file_path) or tarfile.is_tarfile(file_path)):
+            # This is the path the file should be extracted to.
+            # For example model.tar.gz -> model-tar-gz-extracted
+            extraction_dir, extraction_name = os.path.split(file_path)
+            extraction_name = extraction_name.replace(".", "-") + "-extracted"
+            extraction_path = os.path.join(extraction_dir, extraction_name)
+
+    elif parsed.scheme == "":
         # File, but it doesn't exist.
-        raise EnvironmentError("file {} not found".format(url_or_filename))
+        raise FileNotFoundError("file {} not found".format(url_or_filename))
+
     else:
         # Something unknown
         raise ValueError("unable to parse {} as a URL or as a local path".format(url_or_filename))
 
+    if extraction_path is not None:
+        # No need to extract again.
+        if os.path.isdir(extraction_path) and os.listdir(extraction_path) and not force_extract:
+            return extraction_path
 
-def split_s3_path(url):
+        # Extract it.
+        with FileLock(file_path + ".lock"):
+            shutil.rmtree(extraction_path, ignore_errors=True)
+            os.makedirs(extraction_path)
+            if is_zipfile(file_path):
+                with ZipFile(file_path, "r") as zip_file:
+                    zip_file.extractall(extraction_path)
+                    zip_file.close()
+            else:
+                tar_file = tarfile.open(file_path)
+                tar_file.extractall(extraction_path)
+                tar_file.close()
+
+        return extraction_path
+
+    return file_path
+
+
+def is_url_or_existing_file(url_or_filename: Union[str, Path, None]) -> bool:
+    """
+    Given something that might be a URL (or might be a local path),
+    determine check if it's url or an existing file path.
+    """
+    if url_or_filename is None:
+        return False
+    url_or_filename = os.path.expanduser(str(url_or_filename))
+    parsed = urlparse(url_or_filename)
+    return parsed.scheme in ("http", "https", "s3") or os.path.exists(url_or_filename)
+
+
+def _split_s3_path(url: str) -> Tuple[str, str]:
     """Split a full s3 path into the bucket name and path."""
     parsed = urlparse(url)
     if not parsed.netloc or not parsed.path:
@@ -261,172 +220,274 @@ def split_s3_path(url):
     return bucket_name, s3_path
 
 
-def s3_request(func):
+def _s3_request(func: Callable):
     """
     Wrapper function for s3 requests in order to create more helpful error
     messages.
     """
 
     @wraps(func)
-    def wrapper(url, *args, **kwargs):
+    def wrapper(url: str, *args, **kwargs):
         try:
             return func(url, *args, **kwargs)
         except ClientError as exc:
             if int(exc.response["Error"]["Code"]) == 404:
-                raise EnvironmentError("file {} not found".format(url))
+                raise FileNotFoundError("file {} not found".format(url))
             else:
                 raise
 
     return wrapper
 
 
-@s3_request
-def s3_etag(url, proxies=None):
+def _get_s3_resource():
+    session = boto3.session.Session()
+    if session.get_credentials() is None:
+        # Use unsigned requests.
+        s3_resource = session.resource(
+            "s3", config=botocore.client.Config(signature_version=botocore.UNSIGNED)
+        )
+    else:
+        s3_resource = session.resource("s3")
+    return s3_resource
+
+
+@_s3_request
+def _s3_etag(url: str) -> Optional[str]:
     """Check ETag on S3 object."""
-    s3_resource = boto3.resource("s3", config=Config(proxies=proxies))
-    bucket_name, s3_path = split_s3_path(url)
+    s3_resource = _get_s3_resource()
+    bucket_name, s3_path = _split_s3_path(url)
     s3_object = s3_resource.Object(bucket_name, s3_path)
     return s3_object.e_tag
 
 
-@s3_request
-def s3_get(url, temp_file, proxies=None):
+@_s3_request
+def _s3_get(url: str, temp_file: IO) -> None:
     """Pull a file directly from S3."""
-    s3_resource = boto3.resource("s3", config=Config(proxies=proxies))
-    bucket_name, s3_path = split_s3_path(url)
+    s3_resource = _get_s3_resource()
+    bucket_name, s3_path = _split_s3_path(url)
     s3_resource.Bucket(bucket_name).download_fileobj(s3_path, temp_file)
 
 
-def http_get(url, temp_file, proxies=None, resume_size=0, user_agent=None):
-    ua = "transformers/{}; python/{}".format(__version__, sys.version.split()[0])
-    if is_torch_available():
-        ua += "; torch/{}".format(torch.__version__)
-    if is_tf_available():
-        ua += "; tensorflow/{}".format(tf.__version__)
-    if isinstance(user_agent, dict):
-        ua += "; " + "; ".join("{}/{}".format(k, v) for k, v in user_agent.items())
-    elif isinstance(user_agent, str):
-        ua += "; " + user_agent
-    headers = {"user-agent": ua}
-    if resume_size > 0:
-        headers["Range"] = "bytes=%d-" % (resume_size,)
-    response = requests.get(url, stream=True, proxies=proxies, headers=headers)
-    if response.status_code == 416:  # Range not satisfiable
-        return
-    content_length = response.headers.get("Content-Length")
-    total = resume_size + int(content_length) if content_length is not None else None
-    progress = tqdm(
-        unit="B",
-        unit_scale=True,
-        total=total,
-        initial=resume_size,
-        desc="Downloading",
-        disable=bool(logger.getEffectiveLevel() == logging.NOTSET),
-    )
-    for chunk in response.iter_content(chunk_size=1024):
-        if chunk:  # filter out keep-alive new chunks
-            progress.update(len(chunk))
-            temp_file.write(chunk)
-    progress.close()
-
-
-def get_from_cache(
-    url, cache_dir=None, force_download=False, proxies=None, etag_timeout=10, resume_download=False, user_agent=None
-) -> Optional[str]:
+def _session_with_backoff() -> requests.Session:
     """
-    Given a URL, look for the corresponding file in the local cache.
-    If it's not there, download it. Then return the path to the cached file.
+    We ran into an issue where http requests to s3 were timing out,
+    possibly because we were making too many requests too quickly.
+    This helper function returns a requests session that has retry-with-backoff
+    built in. See
+    <https://stackoverflow.com/questions/23267409/how-to-implement-retry-mechanism-into-python-requests-library>.
+    """
+    session = requests.Session()
+    retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+    session.mount("http://", HTTPAdapter(max_retries=retries))
+    session.mount("https://", HTTPAdapter(max_retries=retries))
 
-    Return:
-        None in case of non-recoverable file (non-existent or inaccessible url + no cache on disk).
-        Local path (string) otherwise
+    return session
+
+
+def _http_etag(url: str) -> Optional[str]:
+    with _session_with_backoff() as session:
+        response = session.head(url, allow_redirects=True)
+    if response.status_code != 200:
+        raise IOError(
+            "HEAD request failed for url {} with status code {}".format(url, response.status_code)
+        )
+    return response.headers.get("ETag")
+
+
+def _http_get(url: str, temp_file: IO) -> None:
+    with _session_with_backoff() as session:
+        req = session.get(url, stream=True)
+        content_length = req.headers.get("Content-Length")
+        total = int(content_length) if content_length is not None else None
+        progress = tqdm(unit="B", total=total, desc="downloading")
+        for chunk in req.iter_content(chunk_size=1024):
+            if chunk:  # filter out keep-alive new chunks
+                progress.update(len(chunk))
+                temp_file.write(chunk)
+        progress.close()
+
+
+def _find_latest_cached(url: str, cache_dir: Union[str, Path]) -> Optional[str]:
+    filename = url_to_filename(url)
+    cache_path = os.path.join(cache_dir, filename)
+    candidates: List[Tuple[str, float]] = []
+    for path in glob.glob(cache_path + "*"):
+        if path.endswith(".json"):
+            continue
+        mtime = os.path.getmtime(path)
+        candidates.append((path, mtime))
+    # Sort candidates by modification time, neweste first.
+    candidates.sort(key=lambda x: x[1], reverse=True)
+    if candidates:
+        return candidates[0][0]
+    return None
+
+
+class CacheFile:
+    """
+    This is a context manager that makes robust caching easier.
+
+    On `__enter__`, an IO handle to a temporarily file is returned, which can
+    be treated as if it's the actual cache file.
+
+    On `__exit__`, the temporarily file is renamed to the cache file. If anything
+    goes wrong while writing to the temporary file, it will be removed.
+    """
+
+    def __init__(self, cache_filename: Union[Path, str], mode="w+b") -> None:
+        self.cache_filename = (
+            cache_filename if isinstance(cache_filename, Path) else Path(cache_filename)
+        )
+        self.cache_directory = os.path.dirname(self.cache_filename)
+        self.mode = mode
+        self.temp_file = tempfile.NamedTemporaryFile(
+            self.mode, dir=self.cache_directory, delete=False, suffix=".tmp"
+        )
+
+    def __enter__(self):
+        return self.temp_file
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.temp_file.close()
+        if exc_value is None:
+            # Success.
+            logger.debug(
+                "Renaming temp file %s to cache at %s", self.temp_file.name, self.cache_filename
+            )
+            # Rename the temp file to the actual cache filename.
+            os.replace(self.temp_file.name, self.cache_filename)
+            return True
+        # Something went wrong, remove the temp file.
+        logger.debug("removing temp file %s", self.temp_file.name)
+        os.remove(self.temp_file.name)
+        return False
+
+
+# TODO(joelgrus): do we want to do checksums or anything like that?
+def get_from_cache(url: str, cache_dir: Union[str, Path] = None) -> str:
+    """
+    Given a URL, look for the corresponding dataset in the local cache.
+    If it's not there, download it. Then return the path to the cached file.
     """
     if cache_dir is None:
-        cache_dir = TRANSFORMERS_CACHE
-    if isinstance(cache_dir, Path):
-        cache_dir = str(cache_dir)
+        cache_dir = CACHE_DIRECTORY
 
     os.makedirs(cache_dir, exist_ok=True)
 
     # Get eTag to add to filename, if it exists.
-    if url.startswith("s3://"):
-        etag = s3_etag(url, proxies=proxies)
-    else:
-        try:
-            response = requests.head(url, allow_redirects=True, proxies=proxies, timeout=etag_timeout)
-            if response.status_code != 200:
-                etag = None
-            else:
-                etag = response.headers.get("ETag")
-        except (EnvironmentError, requests.exceptions.Timeout):
-            etag = None
+    try:
+        if url.startswith("s3://"):
+            etag = _s3_etag(url)
+        else:
+            etag = _http_etag(url)
+    except (ConnectionError, EndpointConnectionError):
+        # We might be offline, in which case we don't want to throw an error
+        # just yet. Instead, we'll try to use the latest cached version of the
+        # target resource, if it exists. We'll only throw an exception if we
+        # haven't cached the resource at all yet.
+        logger.warning(
+            "Connection error occured while trying to fetch ETag for %s. "
+            "Will attempt to use latest cached version of resource",
+            url,
+        )
+        latest_cached = _find_latest_cached(url, cache_dir)
+        if latest_cached:
+            logger.info(
+                "ETag request failed with connection error, using latest cached "
+                "version of %s: %s",
+                url,
+                latest_cached,
+            )
+            return latest_cached
+        else:
+            logger.error(
+                "Connection failed while trying to fetch ETag, "
+                "and no cached version of %s could be found",
+                url,
+            )
+            raise
+    except OSError:
+        # OSError may be triggered if we were unable to fetch the eTag.
+        # If this is the case, try to proceed without eTag check.
+        etag = None
 
     filename = url_to_filename(url, etag)
 
-    # get cache path to put the file
+    # Get cache path to put the file.
     cache_path = os.path.join(cache_dir, filename)
 
-    # etag is None = we don't have a connection, or url doesn't exist, or is otherwise inaccessible.
-    # try to get the last downloaded one
-    if etag is None:
+    # Multiple processes may be trying to cache the same file at once, so we need
+    # to be a little careful to avoid race conditions. We do this using a lock file.
+    # Only one process can own this lock file at a time, and a process will block
+    # on the call to `lock.acquire()` until the process currently holding the lock
+    # releases it.
+    logger.debug("waiting to acquire lock on %s", cache_path)
+    with FileLock(cache_path + ".lock"):
         if os.path.exists(cache_path):
-            return cache_path
+            logger.info("cache of %s is up-to-date", url)
         else:
-            matching_files = [
-                file
-                for file in fnmatch.filter(os.listdir(cache_dir), filename + ".*")
-                if not file.endswith(".json") and not file.endswith(".lock")
-            ]
-            if len(matching_files) > 0:
-                return os.path.join(cache_dir, matching_files[-1])
-            else:
-                return None
+            with CacheFile(cache_path) as cache_file:
+                logger.info("%s not found in cache, downloading to %s", url, cache_path)
 
-    # From now on, etag is not None.
-    if os.path.exists(cache_path) and not force_download:
-        return cache_path
+                # GET file object
+                if url.startswith("s3://"):
+                    _s3_get(url, cache_file)
+                else:
+                    _http_get(url, cache_file)
 
-    # Prevent parallel downloads of the same file with a lock.
-    lock_path = cache_path + ".lock"
-    with FileLock(lock_path):
-
-        if resume_download:
-            incomplete_path = cache_path + ".incomplete"
-
-            @contextmanager
-            def _resumable_file_manager():
-                with open(incomplete_path, "a+b") as f:
-                    yield f
-
-            temp_file_manager = _resumable_file_manager
-            if os.path.exists(incomplete_path):
-                resume_size = os.stat(incomplete_path).st_size
-            else:
-                resume_size = 0
-        else:
-            temp_file_manager = partial(tempfile.NamedTemporaryFile, dir=cache_dir, delete=False)
-            resume_size = 0
-
-        # Download to temporary file, then copy to cache dir once finished.
-        # Otherwise you get corrupt cache entries if the download gets interrupted.
-        with temp_file_manager() as temp_file:
-            logger.info("%s not found in cache or force_download set to True, downloading to %s", url, temp_file.name)
-
-            # GET file object
-            if url.startswith("s3://"):
-                if resume_download:
-                    logger.warn('Warning: resumable downloads are not implemented for "s3://" urls')
-                s3_get(url, temp_file, proxies=proxies)
-            else:
-                http_get(url, temp_file, proxies=proxies, resume_size=resume_size, user_agent=user_agent)
-
-        logger.info("storing %s in cache at %s", url, cache_path)
-        os.rename(temp_file.name, cache_path)
-
-        logger.info("creating metadata file for %s", cache_path)
-        meta = {"url": url, "etag": etag}
-        meta_path = cache_path + ".json"
-        with open(meta_path, "w") as meta_file:
-            json.dump(meta, meta_file)
+            logger.debug("creating metadata file for %s", cache_path)
+            meta = {"url": url, "etag": etag}
+            meta_path = cache_path + ".json"
+            with open(meta_path, "w") as meta_file:
+                json.dump(meta, meta_file)
 
     return cache_path
+
+
+def read_set_from_file(filename: str) -> Set[str]:
+    """
+    Extract a de-duped collection (set) of text from a file.
+    Expected file format is one item per line.
+    """
+    collection = set()
+    with open(filename, "r") as file_:
+        for line in file_:
+            collection.add(line.rstrip())
+    return collection
+
+
+def get_file_extension(path: str, dot=True, lower: bool = True):
+    ext = os.path.splitext(path)[1]
+    ext = ext if dot else ext[1:]
+    return ext.lower() if lower else ext
+
+
+def open_compressed(
+        filename: Union[str, Path], mode: str = "rt", encoding: Optional[str] = "UTF-8", **kwargs
+):
+    if isinstance(filename, Path):
+        filename = str(filename)
+    open_fn: Callable = open
+
+    if filename.endswith(".gz"):
+        import gzip
+
+        open_fn = gzip.open
+    elif filename.endswith(".bz2"):
+        import bz2
+
+        open_fn = bz2.open
+    return open_fn(filename, mode=mode, encoding=encoding, **kwargs)
+
+
+def text_lines_from_file(filename: Union[str, Path], strip_lines: bool = True) -> Iterator[str]:
+    with open_compressed(filename, "rt", encoding="UTF-8", errors="replace") as p:
+        if strip_lines:
+            for line in p:
+                yield line.strip()
+        else:
+            yield from p
+
+
+def json_lines_from_file(filename: Union[str, Path]) -> Iterable[Union[list, dict]]:
+    return (json.loads(line) for line in text_lines_from_file(filename))
