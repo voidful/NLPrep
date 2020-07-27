@@ -35,7 +35,8 @@ setup(
         # input panel
         "inquirer",
         "BeautifulSoup4",
-        "lxml"
+        "lxml",
+        "pyarrow >= 0.16.0"
     ],
     entry_points={
         'console_scripts': ['nlprep=nlprep.main:main']

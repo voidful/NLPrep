@@ -11,3 +11,4 @@ nlp >= 0.3.0
 phraseg >= 1.1.8
 transformers >= 2.5.1
 lxml
+pyarrow>=0.16.0
