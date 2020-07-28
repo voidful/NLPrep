@@ -27,7 +27,7 @@ setup(
         # generate report
         "pandas-profiling >= 2.8.0",
         # dataset
-        "nlp == 0.2.1",
+        "nlp >= 0.3.0",
         # phrase segmentation
         "phraseg >= 1.1.8",
         # tokenizer support
@@ -36,7 +36,7 @@ setup(
         "inquirer",
         "BeautifulSoup4",
         "lxml",
-        "pyarrow >= 0.16.0"
+        "pyarrow == 0.16.0"
     ],
     entry_points={
         'console_scripts': ['nlprep=nlprep.main:main']
