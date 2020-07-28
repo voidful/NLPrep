@@ -2,9 +2,9 @@ from nlprep.middleformat import MiddleFormat
 
 DATASETINFO = {
     'DATASET_FILE_MAP': {
-        "weibonername-train": "https://raw.githubusercontent.com/hltcoe/golden-horse/master/data/weiboNER.conll.train",
-        "weibonername-test": "https://raw.githubusercontent.com/hltcoe/golden-horse/master/data/weiboNER.conll.test",
-        "weibonername-dev": "https://raw.githubusercontent.com/hltcoe/golden-horse/master/data/weiboNER.conll.dev",
+        "weiboner-train": "https://raw.githubusercontent.com/hltcoe/golden-horse/master/data/weiboNER.conll.train",
+        "weiboner-test": "https://raw.githubusercontent.com/hltcoe/golden-horse/master/data/weiboNER.conll.test",
+        "weiboner-dev": "https://raw.githubusercontent.com/hltcoe/golden-horse/master/data/weiboNER.conll.dev",
     },
     'TASK': "tag",
     'FULLNAME': "Weibo NER dataset",
