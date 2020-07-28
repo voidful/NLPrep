@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='nlprep',
-    version='0.1.42',
+    version='0.1.45',
     description='Download and pre-processing data for nlp tasks',
     url='https://github.com/voidful/nlprep',
     author='Voidful',
@@ -27,7 +27,7 @@ setup(
         # generate report
         "pandas-profiling >= 2.8.0",
         # dataset
-        "nlp >= 0.3.0",
+        "nlp == 0.2.1",
         # phrase segmentation
         "phraseg >= 1.1.8",
         # tokenizer support

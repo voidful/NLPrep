@@ -18,12 +18,12 @@ def load(data):
 def toMiddleFormat(path):
     from phraseg import Phraseg
     punctuations = r"[．﹑︰〈〉─《﹖﹣﹂﹁﹔！？｡。＂＃＄％＆＇（）＊＋，﹐－／：；＜＝＞＠［＼］＾＿｀｛｜｝～｟｠｢｣､、〃》「」『』【】〔〕〖〗〘〙〚〛〜〝〞〟〰〾〿–—‘’‛“”„‟…‧﹏.．!\"#$%&()*+,\-.\:;<=>?@\[\]\\\/^_`{|}~]+"
-
-    dataset = MiddleFormat(DATASETINFO)
+    MASKTOKEN = "[MASK]"
+    dataset = MiddleFormat(DATASETINFO, [MASKTOKEN])
     phraseg = Phraseg(path)
 
     for line in tqdm(nlp2.read_files_yield_lines(path)):
-        line = nlp2.clean_all(line)
+        line = nlp2.clean_all(line).strip()
 
         if len(nlp2.split_sentence_to_array(line)) > 1:
             phrases = list((phraseg.extract(sent=line, merge_overlap=False)).keys())
@@ -33,8 +33,8 @@ def toMiddleFormat(path):
             target_sent = re.findall(reg, line, re.UNICODE)
             for ind, word in enumerate(input_sent):
                 prob = random.random()
-                if prob <= 0.15:
-                    input_sent[ind] = "[MASK]"
+                if prob <= 0.15 and len(word) > 0:
+                    input_sent[ind] = MASKTOKEN
             if len(input_sent) > 2 and len(target_sent) > 2:
                 dataset.add_data(nlp2.join_words_to_sentence(input_sent), nlp2.join_words_to_sentence(target_sent))
 

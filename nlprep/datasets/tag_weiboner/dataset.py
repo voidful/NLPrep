@@ -7,7 +7,7 @@ DATASETINFO = {
         "weibonername-dev": "https://raw.githubusercontent.com/hltcoe/golden-horse/master/data/weiboNER.conll.dev",
     },
     'TASK': "tag",
-    'FULLNAME': "Weibo NER dataset with only name",
+    'FULLNAME': "Weibo NER dataset",
     'REF': {"Source": "https://github.com/hltcoe/golden-horse"},
     'DESCRIPTION': 'Entity Recognition (NER) for Chinese Social Media (Weibo). This dataset contains messages selected from Weibo and annotated according to the DEFT ERE annotation guidelines.'
 }
@@ -27,10 +27,6 @@ def toMiddleFormat(path):
             if len(i) > 1:
                 sent, tar = i.split('	')
                 sent_input.append(sent)
-                if "PER.NAM" not in tar:
-                    tar = 'O'
-                else:
-                    tar = tar.replace(".NAM", "")
                 sent_target.append(tar)
             else:
                 dataset.add_data(sent_input, sent_target)

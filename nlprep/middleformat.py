@@ -22,7 +22,7 @@ from nlprep.utils.pairslevel import separate_token
 
 class MiddleFormat:
 
-    def __init__(self, dataset_info):
+    def __init__(self, dataset_info, special_token=[]):
         self.pairs = []
         self.processed_pairs = []
 
@@ -31,6 +31,7 @@ class MiddleFormat:
         self.fullname = dataset_info.get('FULLNAME', "")
         self.ref = dataset_info.get('REF', "")
         self.desc = dataset_info.get('DESCRIPTION', "")
+        self.spe_tok = special_token
 
     def add_data(self, input, target):
         self.pairs.append([input, target])
@@ -61,8 +62,10 @@ class MiddleFormat:
     def _normalize_input_target(self, input, target=None):
 
         if isinstance(input, str) and not nlp2.is_all_english(input):
-            split_sep_tok = " ".join(nlp2.split_sentence_to_array(separate_token))
-            input = " ".join(nlp2.split_sentence_to_array(input)).replace(split_sep_tok, separate_token)
+            input = " ".join(nlp2.split_sentence_to_array(input))
+            input = input.replace(" ".join(nlp2.split_sentence_to_array(separate_token)), separate_token)
+            for t in self.spe_tok:
+                input = input.replace(" ".join(nlp2.split_sentence_to_array(t)), t)
 
         if isinstance(target, str) and not nlp2.is_all_english(target):
             target = " ".join(nlp2.split_sentence_to_array(target))
