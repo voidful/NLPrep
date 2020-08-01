@@ -1,9 +1,7 @@
 import importlib
-import os
 import unittest
 
 import nlprep
-import pytest
 
 
 class TestDataset(unittest.TestCase):
