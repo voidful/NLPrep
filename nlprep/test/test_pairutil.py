@@ -17,7 +17,7 @@ class TestDataset(unittest.TestCase):
     def testSplitData(self):
         pair_util = nlprep.utils.pairslevel
         dummyPath = "path"
-        dummyPair = [["a", "b"]] * 10
+        dummyPair = [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5], [6, 6], [7, 7], [8, 8], [9, 9], [10, 10]]
 
         splited = pair_util.splitData(dummyPath, dummyPair, train_ratio=0.7, test_ratio=0.2, valid_ratio=0.1)
         print(splited)

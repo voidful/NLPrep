@@ -20,11 +20,15 @@ def load(data):
 def toMiddleFormat(paths):
     dataset = MiddleFormat(DATASETINFO)
     for path in paths:
+        added_data = []
         with open(path, encoding='utf8') as f:
             if "失望" in f.readline():
                 sentiment = "negative"
             else:
                 sentiment = "positive"
             for i in list(f.readlines()):
-                dataset.add_data(i.strip(), sentiment)
+                input_data = i.strip().replace(" ", "")
+                if input_data not in added_data:
+                    dataset.add_data(i.strip(), sentiment)
+                    added_data.append(input_data)
     return dataset
