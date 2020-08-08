@@ -1,8 +1,5 @@
-import json
-
 import nlp
 import nlp2
-from tqdm import tqdm
 from nlprep.middleformat import MiddleFormat
 
 DATASETINFO = {

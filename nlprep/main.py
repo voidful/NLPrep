@@ -37,7 +37,7 @@ def load_utilities(util_name_list, disable_input_panel=False):
     return sent_utils, pairs_utils
 
 
-def convert_middleformat(dataset, input_file_map=None, cache_dir=None, dataset_arg=None):
+def convert_middleformat(dataset, input_file_map=None, cache_dir=None, dataset_arg={}):
     sets = {}
     dataset_map = input_file_map if input_file_map else dataset.DATASETINFO['DATASET_FILE_MAP']
     for map_name, map_dataset in dataset_map.items():
