@@ -37,7 +37,7 @@ def load_utilities(util_name_list, disable_input_panel=False):
     return sent_utils, pairs_utils
 
 
-def convert_middleformat(dataset, input_file_map=None, cache_dir=None):
+def convert_middleformat(dataset, input_file_map=None, cache_dir=None, dataset_arg=None):
     sets = {}
     dataset_map = input_file_map if input_file_map else dataset.DATASETINFO['DATASET_FILE_MAP']
     for map_name, map_dataset in dataset_map.items():
@@ -50,7 +50,7 @@ def convert_middleformat(dataset, input_file_map=None, cache_dir=None):
             dataset_path = loaded_dataset
         else:
             dataset_path = cached_path(loaded_dataset, cache_dir=cache_dir)
-        sets[map_name] = dataset.toMiddleFormat(dataset_path)
+        sets[map_name] = dataset.toMiddleFormat(dataset_path, **dataset_arg)
     return sets
 
 
@@ -85,7 +85,9 @@ def main():
         input_map = None
 
     print("Start processing data...")
-    for k, middleformat in convert_middleformat(dataset, input_file_map=input_map, cache_dir=arg.cachedir).items():
+    dataset_arg = nlp2.function_argument_panel(dataset.toMiddleFormat, ignore_empty=True)
+    for k, middleformat in convert_middleformat(dataset, input_file_map=input_map, cache_dir=arg.cachedir,
+                                                dataset_arg=dataset_arg).items():
         middleformat.dump_csvfile(os.path.join(arg.outdir, k), pairs_utils, sent_utils)
         if arg.report:
             profile = middleformat.get_report(k)

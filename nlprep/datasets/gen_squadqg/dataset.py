@@ -1,6 +1,7 @@
 import json
 
 import nlp
+import nlp2
 from tqdm import tqdm
 from nlprep.middleformat import MiddleFormat
 
@@ -20,10 +21,12 @@ def load(data):
     return nlp.load_dataset('squad')[data]
 
 
-def toMiddleFormat(data):
+def toMiddleFormat(data, context_max_len=450, answer_max_len=50):
     dataset = MiddleFormat(DATASETINFO)
     for d in data:
-        input_data = d['context'] + " [SEP] " + d['answers']['text'][0]
+        context = nlp2.split_sentence_to_array(d['context'])
+        answer = nlp2.split_sentence_to_array(d['answers']['text'][0])
+        input_data = " ".join(context[:context_max_len]) + " [SEP] " + " ".join(answer[:answer_max_len])
         target_data = d['question']
         dataset.add_data(input_data, target_data)
 
