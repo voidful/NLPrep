@@ -17,7 +17,7 @@ import pandas as pd
 #         ...
 #     ]
 # }
-from nlprep.utils.pairslevel import separate_token
+import nlprep.utils.pairslevel as pltool
 
 
 class MiddleFormat:
@@ -63,7 +63,7 @@ class MiddleFormat:
 
         if isinstance(input, str) and not nlp2.is_all_english(input):
             input = " ".join(nlp2.split_sentence_to_array(input))
-            input = input.replace(" ".join(nlp2.split_sentence_to_array(separate_token)), separate_token)
+            input = input.replace(" ".join(nlp2.split_sentence_to_array(pltool.separate_token)), pltool.separate_token)
             for t in self.spe_tok:
                 input = input.replace(" ".join(nlp2.split_sentence_to_array(t)), t)
 

@@ -35,7 +35,8 @@ def toMiddleFormat(path):
                 prob = random.random()
                 if prob <= 0.15 and len(word) > 0:
                     input_sent[ind] = MASKTOKEN
-            if len(input_sent) > 2 and len(target_sent) > 2:
+            if len(input_sent) > 2 and len(target_sent) > 2 and len("".join(input_sent).strip()) > 2 and len(
+                    "".join(target_sent).strip()) > 2:
                 dataset.add_data(nlp2.join_words_to_sentence(input_sent), nlp2.join_words_to_sentence(target_sent))
 
     return dataset
