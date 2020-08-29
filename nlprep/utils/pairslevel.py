@@ -49,7 +49,7 @@ def setMaxLen(path, pair, maxlen=512, tokenizer="word", with_target=False, handl
     """set model maximum length"""
     global separate_token
     maxlen = int(maxlen)
-    with_target = json.loads(with_target.lower())
+    with_target = json.loads(str(with_target).lower())
     if tokenizer == 'word':
         sep_func = nlp2.split_sentence_to_array
     elif tokenizer == 'char':
