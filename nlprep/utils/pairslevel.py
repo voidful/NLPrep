@@ -1,3 +1,4 @@
+import json
 import random
 import sys
 import inspect
@@ -37,14 +38,18 @@ def setSepToken(path, pair, sep_token="[SEP]"):
     separate_token = sep_token
     for ind, p in enumerate(pair):
         input_sent = p[0]
-        pair[ind][0] = input_sent.replace("[SEP]", sep_token)
+        if isinstance(input_sent, str):
+            pair[ind][0] = input_sent.replace("[SEP]", sep_token)
+        else:
+            pair[ind][0] = [sep_token if word == "[SEP]" else word for word in pair[ind][0]]
     return [[path, pair]]
 
 
-def setMaxLen(path, pair, maxlen=512, tokenizer="word", with_target=[True, False], handle_over=['remove', 'slice']):
+def setMaxLen(path, pair, maxlen=512, tokenizer="word", with_target=False, handle_over=['remove', 'slice']):
     """set model maximum length"""
     global separate_token
     maxlen = int(maxlen)
+    with_target = json.loads(with_target.lower())
     if tokenizer == 'word':
         sep_func = nlp2.split_sentence_to_array
     elif tokenizer == 'char':
@@ -58,7 +63,8 @@ def setMaxLen(path, pair, maxlen=512, tokenizer="word", with_target=[True, False
     new_sep_token = " ".join(sep_func(separate_token)).strip()
     small_than_max_pairs = []
     for ind, p in enumerate(pair):
-        tok_input = sep_func(p[0] + " " + p[1]) if with_target else sep_func(p[0])
+        tok_input = sep_func(p[0] + " " + p[1]) if with_target and isinstance(p[0], str) and isinstance(p[1], str) \
+            else sep_func(p[0])
         if len(tok_input) < maxlen:
             small_than_max_pairs.append(p)
         elif handle_over == 'slice':

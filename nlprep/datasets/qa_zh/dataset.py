@@ -1,6 +1,6 @@
 import json
 import re
-
+import nlp2
 from nlprep.middleformat import MiddleFormat
 
 DATASETINFO = {
@@ -56,7 +56,7 @@ def toMiddleFormat(paths):
                 for qas in paragraph['qas']:
                     qas['question'] = filter(qas['question'])
                     question = list(qas['question'])
-                    question = ['[Question]'] + question
+                    question = ['[SEP]'] + question
                     for answers in qas['answers'][:1]:
                         paragraph['context'] = filter(paragraph['context'])
                         context = paragraph['context']
@@ -78,11 +78,12 @@ def toMiddleFormat(paths):
                                 start = t.index("A")
                                 end = start + ans_length
                             if "".join(c[start:end]) == ans or "A" not in t or ans == "FAKE_ANSWER_1":
-                                dataset.add_data(c, [start, end])
+                                dataset.add_data(" ".join(c), [start, end])
                             elif "A" in t and ans != "FAKE_ANSWER_1":
                                 miss += 1
                             total += 1
-        print(miss, total, miss / total)
+        print("over max len:", miss, "total:", total, "ratio:", miss / total)
+
     return dataset
 
 

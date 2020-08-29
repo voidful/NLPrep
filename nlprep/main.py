@@ -32,7 +32,7 @@ def load_utilities(util_name_list, disable_input_panel=False):
     # handle utility argument input
     for util_list in [pairs_utils, sent_utils]:
         for ind, util in enumerate(util_list):
-            util_arg = nlp2.function_argument_panel(util, show_func_name=True, disable_input_panel=disable_input_panel)
+            util_arg = nlp2.function_argument_panel(util, disable_input_panel=disable_input_panel)
             util_list[ind] = [util, util_arg]
     return sent_utils, pairs_utils
 
