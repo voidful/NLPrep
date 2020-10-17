@@ -1,6 +1,4 @@
 import json
-import re
-import nlp2
 from nlprep.middleformat import MiddleFormat
 
 DATASETINFO = {
@@ -50,10 +48,10 @@ def toMiddleFormat(paths):
         for item in dataset_json:
             for paragraph in item['paragraphs']:
                 for qas in paragraph['qas']:
-                    question = qas['question']
+                    question = replace_s(qas['question'])
                     for answers in qas['answers'][:1]:
-                        context = paragraph['context']
-                        ans = str(answers['text'])
+                        context = replace_s(paragraph['context'])
+                        ans = replace_s(str(answers['text']))
                         ans_length = len(ans)
                         start = answers['answer_start']
                         end = start + ans_length
@@ -68,5 +66,9 @@ def toMiddleFormat(paths):
                             dataset.add_data(input_sent, [start, end])
                         else:
                             print("input_sent", context[start:end], "ans", ans)
-
     return dataset
+
+
+def replace_s(s):
+    return s.replace(" ", "_").replace('\t', "_").replace('\n', "_"). \
+        replace('\r', "_").replace('\v', "_").replace('\f', "_").replace(' ', "_").replace(' ',"_")

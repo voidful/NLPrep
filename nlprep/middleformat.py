@@ -60,7 +60,6 @@ class MiddleFormat:
         return sents
 
     def _normalize_input_target(self, input, target=None):
-
         if isinstance(input, str) and not nlp2.is_all_english(input):
             input = " ".join(nlp2.split_sentence_to_array(input))
             input = input.replace(" ".join(nlp2.split_sentence_to_array(pltool.separate_token)), pltool.separate_token)
@@ -88,7 +87,6 @@ class MiddleFormat:
             input, target = self._normalize_input_target(input, target)
             input, target = self._run_sent_utility([input, target], sentu_func)
         elif self.task == "qa":
-            input, _ = self._normalize_input_target(input)
             input = self._run_sent_utility([input], sentu_func)[0]
         return input, target
 
