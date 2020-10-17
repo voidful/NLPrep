@@ -1,4 +1,7 @@
 import json
+
+import nlp2
+
 from nlprep.middleformat import MiddleFormat
 
 DATASETINFO = {
@@ -52,17 +55,28 @@ def toMiddleFormat(paths):
                     for answers in qas['answers'][:1]:
                         context = replace_s(paragraph['context'])
                         ans = replace_s(str(answers['text']))
-                        ans_length = len(ans)
-                        start = answers['answer_start']
-                        end = start + ans_length
-                        if ans == 'YES' or ans == 'NO':
-                            input_sent = " ".join([ans] + list(context)) + " [SEP] " + " ".join(list(question))
+                        ori_start = start = answers['answer_start']
+
+                        ans = nlp2.split_sentence_to_array(ans)
+                        context = nlp2.split_sentence_to_array(context)
+                        question = nlp2.split_sentence_to_array(question)
+
+                        pos = -1
+                        for tok in context:
+                            pos += len(tok)
+                            if len(tok) != 1:
+                                if pos <= ori_start:
+                                    start -= len(tok) - 1
+                        end = start + len(ans)
+
+                        if 'YES' in ans or 'NO' in ans:
+                            input_sent = " ".join(ans + context) + " [SEP] " + " ".join(question)
                             dataset.add_data(input_sent, [0, 1])
-                        elif ans == 'FAKE_ANSWER_1':
-                            input_sent = " ".join(list(context)) + " [SEP] " + " ".join(list(question))
+                        elif 'FAKE' in ans:
+                            input_sent = " ".join(context) + " [SEP] " + " ".join(question)
                             dataset.add_data(input_sent, [0, 0])
                         elif context[start:end] == ans:
-                            input_sent = " ".join(list(context)) + " [SEP] " + " ".join(list(question))
+                            input_sent = " ".join(context) + " [SEP] " + " ".join(question)
                             dataset.add_data(input_sent, [start, end])
                         else:
                             print("input_sent", context[start:end], "ans", ans)
@@ -70,5 +84,5 @@ def toMiddleFormat(paths):
 
 
 def replace_s(s):
-    return s.replace(" ", "_").replace('\t', "_").replace('\n', "_"). \
-        replace('\r', "_").replace('\v', "_").replace('\f', "_").replace(' ', "_").replace(' ',"_")
+    return s.replace(" ", "_").replace("​", "_").replace('\t', "_").replace('\n', "_"). \
+        replace('\r', "_").replace('\v', "_").replace('\f', "_").replace(' ', "_").replace(' ', "_").replace("　", "_")
