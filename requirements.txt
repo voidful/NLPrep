@@ -9,6 +9,6 @@ pandas-profiling >= 2.8.0
 nlp2 >= 1.8.27
 nlp >= 0.3.0
 phraseg >= 1.1.8
-transformers >= 2.5.1
+transformers==3.3.0
 lxml
 pyarrow==0.16.0

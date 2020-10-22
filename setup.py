@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='nlprep',
-    version='0.1.55',
+    version='0.1.56',
     description='Download and pre-processing data for nlp tasks',
     url='https://github.com/voidful/nlprep',
     author='Voidful',
@@ -31,7 +31,7 @@ setup(
         # phrase segmentation
         "phraseg >= 1.1.8",
         # tokenizer support
-        "transformers >= 2.5.1",
+        "transformers==3.3.0",
         # input panel
         "inquirer",
         "BeautifulSoup4",
