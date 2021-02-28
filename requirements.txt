@@ -11,4 +11,3 @@ nlp >= 0.3.0
 phraseg >= 1.1.8
 transformers==3.3.0
 lxml
-pyarrow==0.16.0

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='nlprep',
-    version='0.1.56',
+    version='0.1.57',
     description='Download and pre-processing data for nlp tasks',
     url='https://github.com/voidful/nlprep',
     author='Voidful',
@@ -35,8 +35,7 @@ setup(
         # input panel
         "inquirer",
         "BeautifulSoup4",
-        "lxml",
-        "pyarrow == 0.16.0"
+        "lxml"
     ],
     entry_points={
         'console_scripts': ['nlprep=nlprep.main:main']
