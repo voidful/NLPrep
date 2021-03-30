@@ -1,6 +1,6 @@
 import argparse
 import importlib
-import nlp
+import datasets
 
 from nlprep.file_utils import cached_path
 from nlprep.utils.sentlevel import *
@@ -46,7 +46,7 @@ def convert_middleformat(dataset, input_file_map=None, cache_dir=None, dataset_a
             for i, path in enumerate(loaded_dataset):
                 loaded_dataset[i] = cached_path(path, cache_dir=cache_dir)
             dataset_path = loaded_dataset
-        elif isinstance(loaded_dataset, nlp.arrow_dataset.Dataset):
+        elif isinstance(loaded_dataset, datasets.arrow_dataset.Dataset):
             dataset_path = loaded_dataset
         else:
             dataset_path = cached_path(loaded_dataset, cache_dir=cache_dir)

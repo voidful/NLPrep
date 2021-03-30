@@ -2,8 +2,8 @@ import json
 import random
 import sys
 import inspect
-from transformers import *
 import nlp2
+from transformers import BertTokenizer, AutoTokenizer
 
 separate_token = "[SEP]"
 

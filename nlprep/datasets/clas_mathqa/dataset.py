@@ -1,5 +1,5 @@
 from nlprep.middleformat import MiddleFormat
-import nlp
+import datasets
 
 DATASETINFO = {
     'DATASET_FILE_MAP': {
@@ -15,7 +15,7 @@ DATASETINFO = {
 
 
 def load(data):
-    return nlp.load_dataset('math_qa')[data]
+    return datasets.load_dataset('math_qa')[data]
 
 
 def toMiddleFormat(data):

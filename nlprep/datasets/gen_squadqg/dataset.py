@@ -1,4 +1,4 @@
-import nlp
+import datasets
 import nlp2
 from nlprep.middleformat import MiddleFormat
 
@@ -15,7 +15,7 @@ DATASETINFO = {
 
 
 def load(data):
-    return nlp.load_dataset('squad')[data]
+    return datasets.load_dataset('squad')[data]
 
 
 def toMiddleFormat(data, context_max_len=450, answer_max_len=50):
