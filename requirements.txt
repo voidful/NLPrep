@@ -7,7 +7,7 @@ tqdm >= 4.27
 opencc-python-reimplemented
 pandas-profiling >= 2.8.0
 nlp2 >= 1.8.27
-nlp >= 0.3.0
 phraseg >= 1.1.8
-transformers>=3.3.0
+transformers
 lxml
+datasets

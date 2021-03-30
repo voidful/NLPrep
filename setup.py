@@ -27,7 +27,7 @@ setup(
         # generate report
         "pandas-profiling >= 2.8.0",
         # dataset
-        "datasets >= 0.3.0",
+        "datasets",
         # phrase segmentation
         "phraseg >= 1.1.8",
         # tokenizer support
